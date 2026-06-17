@@ -128,13 +128,30 @@
     return [item.title, airport?.cityEn].filter(Boolean).join(" ");
   }
 
+  function googleMapEmbedUrl(params) {
+    const url = new URL("https://maps.google.com/maps");
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        url.searchParams.set(key, value);
+      }
+    });
+    url.searchParams.set("hl", "zh-TW");
+    url.searchParams.set("output", "embed");
+    return url.href;
+  }
+
   function googleMapPlaceEmbedUrl(query, zoom = 12) {
-    return `https://www.google.com/maps?q=${encodeURIComponent(query)}&z=${zoom}&hl=zh-TW&output=embed`;
+    return googleMapEmbedUrl({ q: query, z: String(zoom) });
   }
 
   function googleMapRouteEmbedUrl() {
-    const routePath = data.route.map((code) => encodeURIComponent(airports[code].mapQuery)).join("/");
-    return `https://www.google.com/maps/dir/${routePath}?hl=zh-TW&output=embed`;
+    const routePoints = data.route.map((code) => airports[code].mapQuery);
+    const destination = routePoints.slice(1).join(" to: ");
+    return googleMapEmbedUrl({
+      f: "d",
+      saddr: routePoints[0],
+      daddr: destination
+    });
   }
 
   function flightStatusUrl(flight) {
@@ -254,7 +271,7 @@
       {
         id: "route",
         label: "整趟路線",
-        caption: "Google Maps 互動路線，可放大縮小；若航班跨海路線無法計算，請切換單一機場地標。",
+        caption: "Google Maps 互動路線，可放大縮小；跨海航段若無法計算，請切換單一機場地標查看。",
         src: googleMapRouteEmbedUrl()
       },
       ...Object.values(airports).map((airport) => ({
