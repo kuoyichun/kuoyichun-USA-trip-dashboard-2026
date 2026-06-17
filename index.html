@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2026 美國行程控制台</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="#top" aria-label="回到總覽">
+      <span class="brand-mark">TW</span>
+      <span>
+        <strong>2026 美國行程控制台</strong>
+        <small>台北 · 西雅圖 · 夏洛特 · 丹佛 · 洛杉磯</small>
+      </span>
+    </a>
+    <nav class="top-nav" aria-label="頁面導覽">
+      <a href="#flights">航班</a>
+      <a href="#map">地圖</a>
+      <a href="#planner">行程</a>
+      <a href="#pending">待補</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="overview-band">
+      <div class="overview-grid">
+        <div class="summary-panel">
+          <p class="eyebrow">Trip window</p>
+          <h1>6/21 出發，7/6 抵達台灣</h1>
+          <div class="route-chips" aria-label="路線">
+            <span>TPE</span>
+            <span>SEA</span>
+            <span>CLT</span>
+            <span>DEN</span>
+            <span>LAX</span>
+            <span>TPE</span>
+          </div>
+          <div class="metric-row">
+            <div>
+              <strong>5</strong>
+              <span>航段</span>
+            </div>
+            <div>
+              <strong>4</strong>
+              <span>美國機場</span>
+            </div>
+            <div>
+              <strong>16</strong>
+              <span>旅程日</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="now-panel" aria-live="polite">
+          <div class="panel-heading">
+            <p class="eyebrow">World clocks</p>
+            <h2>現在各地時間</h2>
+          </div>
+          <div class="clock-grid" id="clockGrid"></div>
+        </div>
+
+        <div class="alert-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">Critical path</p>
+            <h2>需要先盯緊</h2>
+          </div>
+          <ul class="priority-list">
+            <li><strong>SEA 轉機 5 小時 25 分</strong><span>美國第一站通常要入境、領行李與重新安檢。</span></li>
+            <li><strong>LAX 轉機 4 小時 42 分</strong><span>晚間抵達後接隔日 00:35 返台航班，請確認行李是否直掛。</span></li>
+            <li><strong>住宿請用截圖更新</strong><span>飯店日期容易填錯，等截圖確認後再寫進資料檔。</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="flights" class="section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Flights</p>
+          <h2>航班時間與台灣時間</h2>
+        </div>
+        <button class="ghost-button" id="downloadIcsBtn" type="button">
+          <span aria-hidden="true">↓</span>
+          航班行事曆
+        </button>
+      </div>
+      <div class="flight-list" id="flightList"></div>
+    </section>
+
+    <section id="map" class="section map-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Route map</p>
+          <h2>世界地圖與一鍵導航</h2>
+        </div>
+        <a class="ghost-button" href="https://www.google.com/maps/dir/Taiwan+Taoyuan+International+Airport/Seattle-Tacoma+International+Airport/Charlotte+Douglas+International+Airport/Denver+International+Airport/Los+Angeles+International+Airport/Taiwan+Taoyuan+International+Airport" target="_blank" rel="noreferrer">
+          <span aria-hidden="true">↗</span>
+          Google Maps 路線
+        </a>
+      </div>
+      <div class="map-toolbar" id="mapToolbar" aria-label="切換地圖地標"></div>
+      <div class="route-map" id="routeMap" aria-label="可縮放的 Google Maps 小地圖"></div>
+      <div class="airport-grid" id="airportGrid"></div>
+    </section>
+
+    <section id="climate" class="section climate-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Weather</p>
+          <h2>旅遊季節氣候</h2>
+        </div>
+      </div>
+      <div class="climate-grid" id="climateGrid"></div>
+    </section>
+
+    <section id="planner" class="section planner-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Planner</p>
+          <h2>行程與地標</h2>
+        </div>
+        <div class="tool-actions">
+          <button class="ghost-button" id="exportBtn" type="button">
+            <span aria-hidden="true">↓</span>
+            匯出
+          </button>
+          <label class="ghost-button file-button">
+            <span aria-hidden="true">↑</span>
+            匯入
+            <input id="importInput" type="file" accept="application/json">
+          </label>
+        </div>
+      </div>
+
+      <form class="entry-form" id="entryForm">
+        <label>
+          類型
+          <select name="type">
+            <option>住宿</option>
+            <option>景點</option>
+            <option>餐廳</option>
+            <option>租車</option>
+            <option>交通</option>
+            <option>購物</option>
+            <option>其他</option>
+          </select>
+        </label>
+        <label>
+          名稱
+          <input name="title" type="text" required placeholder="名稱或 Google Maps 地標">
+        </label>
+        <label>
+          日期
+          <input name="date" type="date" min="2026-06-21" max="2026-07-06">
+        </label>
+        <label>
+          時間
+          <input name="time" type="time">
+        </label>
+        <label>
+          城市
+          <select name="city" id="citySelect"></select>
+        </label>
+        <label class="wide-field">
+          Google Maps 或地址
+          <input name="mapUrl" type="url" placeholder="https://maps.google.com/...">
+        </label>
+        <label class="wide-field">
+          備註
+          <textarea name="notes" rows="3" placeholder="訂位、票券、集合點、注意事項"></textarea>
+        </label>
+        <button class="primary-button" type="submit">
+          <span aria-hidden="true">＋</span>
+          新增
+        </button>
+      </form>
+
+      <div class="timeline-tools">
+        <div class="filter-tabs" id="filterTabs" aria-label="行程篩選"></div>
+        <button class="text-button danger" id="resetItemsBtn" type="button">清除自加資料</button>
+      </div>
+      <div class="itinerary-list" id="itineraryList"></div>
+    </section>
+
+    <section id="pending" class="section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Open items</p>
+          <h2>待補資料</h2>
+        </div>
+      </div>
+      <div class="pending-grid" id="pendingGrid"></div>
+    </section>
+
+    <section id="checklist" class="section checklist-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Checklist</p>
+          <h2>出發前檢查</h2>
+        </div>
+      </div>
+      <div class="checklist" id="checklistBox"></div>
+    </section>
+
+  </main>
+
+  <dialog id="toastDialog" class="toast-dialog">
+    <p id="toastText"></p>
+  </dialog>
+
+  <script src="trip-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
