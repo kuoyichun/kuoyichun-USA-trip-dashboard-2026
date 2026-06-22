@@ -583,6 +583,7 @@ window.TRIP_DATA = {
       pickupLocation: "丹佛機場",
       dropoffLocation: "丹佛機場",
       address: "24050 E 78th Ave, Denver, CO 80249",
+      image: "assets/rental-car.png",
       phone: "303-342-9001",
       shuttle: "提車方式：免費接駁車。若搭飛機抵達，租賃櫃台在航站樓內有穿梭車。",
       mapQuery: "24050 E 78th Ave Denver CO 80249",
@@ -595,6 +596,7 @@ window.TRIP_DATA = {
       label: "北卡羅來納大學夏洛特分校 UNC Charlotte",
       title: "北卡羅來納大學夏洛特分校",
       city: "CLT",
+      image: "assets/unc-charlotte.png",
       mapQuery: "University of North Carolina at Charlotte",
       note: "夏洛特住宿期間會前往。"
     },
@@ -603,6 +605,7 @@ window.TRIP_DATA = {
       label: "懷俄明大學 University of Wyoming",
       title: "懷俄明大學",
       city: "DEN",
+      image: "assets/university-wyoming.png",
       mapQuery: "University of Wyoming",
       note: "Airbnb / Laramie 停留期間會前往。"
     }

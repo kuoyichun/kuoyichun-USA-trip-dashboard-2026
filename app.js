@@ -371,8 +371,6 @@
       const departTw = formatDateTimeWithPeriod(flight.departIso, HOME_TZ);
       const arriveTw = formatDateTimeWithPeriod(flight.arriveIso, HOME_TZ);
       const detailBits = [flight.aircraft, flight.duration, flight.cabin].filter(Boolean).join(" · ");
-      const confirmation = flight.confirmation ? `<span class="tag">確認碼 ${escapeHtml(flight.confirmation)}</span>` : "";
-      const seat = flight.seat ? `<span class="tag">座位 ${escapeHtml(flight.seat)}</span>` : "";
 
       return `
         <article class="flight-card">
@@ -404,7 +402,7 @@
             台灣時間：${escapeHtml(departTw.full)} 出發 · ${escapeHtml(arriveTw.full)} 抵達
           </div>
           <div class="flight-meta">${escapeHtml(detailBits)}</div>
-          <div class="tag-row">${confirmation}${seat}<span class="tag">${escapeHtml(flight.fromDetail)}</span><span class="tag">${escapeHtml(flight.toDetail)}</span></div>
+          <div class="tag-row"><span class="tag">${escapeHtml(flight.fromDetail)}</span><span class="tag">${escapeHtml(flight.toDetail)}</span></div>
           <p class="card-muted">${escapeHtml(flight.note)}</p>
           <div class="flight-actions">
             <a class="ghost-button" href="${mapSearchUrl(from.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">⌖</span>${escapeHtml(from.cityZh)}地圖</a>
@@ -611,6 +609,7 @@
     `);
     const rentalCards = (data.rentals || []).map((rental) => `
       <article class="stay-card rental-card">
+        ${rental.image ? `<img class="stay-photo contain-photo" src="${escapeHtml(rental.image)}" alt="${escapeHtml(rental.title)} 車款照片" loading="lazy">` : ""}
         <span class="stay-type">${escapeHtml(rental.type)} · ${escapeHtml(rental.provider)}</span>
         <h3>${escapeHtml(rental.title)}</h3>
         <dl class="stay-detail-list">
@@ -628,7 +627,25 @@
         </div>
       </article>
     `);
-    $("#stayGrid").innerHTML = [...stayCards, ...rentalCards].join("");
+    const placeCards = (data.keyPlaces || []).map((place) => {
+      const airport = airports[place.city] || airports.TPE;
+      return `
+        <article class="stay-card place-card">
+          ${place.image ? `<img class="stay-photo" src="${escapeHtml(place.image)}" alt="${escapeHtml(place.label)} 照片" loading="lazy">` : ""}
+          <span class="stay-type">主要地點 · ${escapeHtml(airport.cityZh)}</span>
+          <h3>${escapeHtml(place.label)}</h3>
+          <dl class="stay-detail-list">
+            <div><dt>地區</dt><dd>${escapeHtml(airport.cityZh)} / ${escapeHtml(airport.cityEn)}</dd></div>
+            <div><dt>重點</dt><dd>${escapeHtml(place.note)}</dd></div>
+          </dl>
+          <div class="card-actions">
+            <button class="ghost-button" type="button" data-focus-map-query="${escapeHtml(place.mapQuery)}" data-focus-map-label="${escapeHtml(place.label)}"><span aria-hidden="true">⌖</span>小地圖</button>
+            <a class="ghost-button" href="${mapSearchUrl(place.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">↗</span>Google Maps</a>
+          </div>
+        </article>
+      `;
+    });
+    $("#stayGrid").innerHTML = [...stayCards, ...rentalCards, ...placeCards].join("");
   }
 
   function renderCityOptions() {
@@ -819,9 +836,7 @@
       `${flight.id} ${flight.from}-${flight.to}`,
       `${from.cityZh} ${from.airportZh} ${departLocal.full} ${zoneAbbr(flight.departIso, from.timezone)}`,
       `${to.cityZh} ${to.airportZh} ${arriveLocal.full} ${zoneAbbr(flight.arriveIso, to.timezone)}`,
-      `台灣時間：${departTw.full} 出發 / ${arriveTw.full} 抵達`,
-      flight.confirmation ? `確認碼：${flight.confirmation}` : "",
-      flight.seat ? `座位：${flight.seat}` : ""
+      `台灣時間：${departTw.full} 出發 / ${arriveTw.full} 抵達`
     ].filter(Boolean).join("\n");
 
     navigator.clipboard?.writeText(summary)
@@ -850,9 +865,7 @@
       const arriveTw = formatDateTimeWithPeriod(flight.arriveIso, HOME_TZ);
       const description = [
         flight.note,
-        `台灣時間：${departTw.full} 出發 / ${arriveTw.full} 抵達`,
-        flight.confirmation ? `確認碼：${flight.confirmation}` : "",
-        flight.seat ? `座位：${flight.seat}` : ""
+        `台灣時間：${departTw.full} 出發 / ${arriveTw.full} 抵達`
       ].filter(Boolean).join("\\n");
       return [
         "BEGIN:VEVENT",
