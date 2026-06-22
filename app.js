@@ -276,9 +276,9 @@
     )) || null;
   }
 
-  function stageSubtitle(stage, now) {
+  function stageSubtitleLines(stage, now) {
     const flight = flightForStage(stage);
-    if (!flight) return stage.subtitle;
+    if (!flight) return [stage.subtitle].filter(Boolean);
     const from = airports[flight.from];
     const to = airports[flight.to];
     const arriveLocal = formatDateTimeWithPeriod(flight.arriveIso, to.timezone);
@@ -293,7 +293,7 @@
       `當地抵達：${arriveLocal.full} ${zoneAbbr(flight.arriveIso, to.timezone)}。`,
       `台灣時間：${arriveTaiwan.full}。`,
       remaining
-    ].filter(Boolean).join(" ");
+    ].filter(Boolean);
   }
 
   function clockPlaceLabel(code, airport) {
@@ -416,7 +416,9 @@
     const taiwanClock = formatClock(HOME_TZ, now);
 
     $("#currentStageTitle").textContent = stage.title;
-    $("#currentStageSubtitle").textContent = stageSubtitle(stage, now);
+    $("#currentStageSubtitle").innerHTML = stageSubtitleLines(stage, now)
+      .map((line) => `<span>${escapeHtml(line)}</span>`)
+      .join("");
     $("#currentLocalLabel").textContent = clockInfo.label;
     $("#currentLocalTime").textContent = localClock.displayTime;
     $("#currentLocalDate").textContent = localClock.date;
@@ -726,6 +728,33 @@
     };
   }
 
+  function numericCoordinate(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
+  function hasCoordinates(point = {}) {
+    return numericCoordinate(point.lat) !== null && numericCoordinate(point.lon) !== null;
+  }
+
+  function coordinateQuery(point = {}) {
+    if (!hasCoordinates(point)) return point.query || point.name || point.label || "";
+    return `${numericCoordinate(point.lat).toFixed(6)},${numericCoordinate(point.lon).toFixed(6)}`;
+  }
+
+  function googleMapPointEmbedUrl(point, zoom = 15) {
+    return googleMapPlaceEmbedUrl(coordinateQuery(point), zoom);
+  }
+
+  function mapPointSearchUrl(point) {
+    return mapSearchUrl(coordinateQuery(point));
+  }
+
+  function safeCssColor(value, fallback = "#2563eb") {
+    const color = String(value || "").trim();
+    return /^#[0-9a-fA-F]{6}$/.test(color) ? color : fallback;
+  }
+
   function transitSelectionMarkup(point, kindLabel = "站點") {
     return `
       <span>${escapeHtml(kindLabel)}</span>
@@ -734,12 +763,196 @@
     `;
   }
 
+  function transitLinePreviewHtml(area, selectedQuery = "") {
+    const previewPoints = [];
+    (area.systems || []).forEach((system) => {
+      (system.stations || []).forEach((station) => {
+        if (!hasCoordinates(station)) return;
+        previewPoints.push({
+          ...station,
+          systemId: system.id,
+          systemName: system.name,
+          color: safeCssColor(system.color),
+          selected: station.query === selectedQuery
+        });
+      });
+    });
+
+    const points = normalizePreviewPoints(previewPoints);
+    if (!points.length) {
+      return `
+        <div class="transit-line-map transit-line-empty" data-transit-line-map="${escapeHtml(area.id)}">
+          <strong>${escapeHtml(area.title)}</strong>
+          <span>Google Maps 顯示目前選取的地點。</span>
+        </div>
+      `;
+    }
+
+    const polylines = (area.systems || []).map((system) => {
+      const systemPoints = points.filter((point) => point.systemId === system.id);
+      if (systemPoints.length < 2) return "";
+      const path = systemPoints.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(" ");
+      return `<polyline points="${path}" style="stroke: ${safeCssColor(system.color)}"></polyline>`;
+    }).join("");
+
+    const pins = points.map((point) => `
+      <button class="transit-map-pin ${point.selected ? "is-selected" : ""}" type="button"
+        style="left: ${point.x.toFixed(2)}%; top: ${point.y.toFixed(2)}%; --line-color: ${point.color};"
+        data-transit-area="${escapeHtml(area.id)}"
+        data-transit-kind="station"
+        data-transit-kind-label="${escapeHtml(point.systemName)}"
+        data-transit-query="${escapeHtml(point.query)}"
+        data-transit-name="${escapeHtml(point.name)}"
+        data-transit-detail="${escapeHtml(point.systemName)}"
+        data-transit-lat="${escapeHtml(point.lat)}"
+        data-transit-lon="${escapeHtml(point.lon)}"
+        aria-label="${escapeHtml(point.name)}">
+        <span aria-hidden="true"></span>
+        <strong>${escapeHtml(point.label)}</strong>
+      </button>
+    `).join("");
+
+    const legend = (area.systems || [])
+      .filter((system) => (system.stations || []).some(hasCoordinates))
+      .map((system) => `
+        <span style="--line-color: ${safeCssColor(system.color)}">
+          <i aria-hidden="true"></i>${escapeHtml(system.name)}
+        </span>
+      `).join("");
+
+    return `
+      <div class="transit-line-map" data-transit-line-map="${escapeHtml(area.id)}">
+        <div class="transit-line-legend">${legend}</div>
+        <svg class="transit-line-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polylines}</svg>
+        ${pins}
+      </div>
+    `;
+  }
+
+  function escapeXml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;");
+  }
+
+  function kmlColor(value) {
+    const color = safeCssColor(value).slice(1);
+    const rr = color.slice(0, 2);
+    const gg = color.slice(2, 4);
+    const bb = color.slice(4, 6);
+    return `ff${bb}${gg}${rr}`;
+  }
+
+  function kmlCoordinate(point) {
+    return `${numericCoordinate(point.lon).toFixed(6)},${numericCoordinate(point.lat).toFixed(6)},0`;
+  }
+
+  function buildTransitKml(area) {
+    const styles = (area.systems || []).map((system) => `
+      <Style id="${escapeXml(system.id)}-line">
+        <LineStyle>
+          <color>${kmlColor(system.color)}</color>
+          <width>5</width>
+        </LineStyle>
+      </Style>
+      <Style id="${escapeXml(system.id)}-station">
+        <IconStyle>
+          <color>${kmlColor(system.color)}</color>
+          <scale>0.85</scale>
+          <Icon>
+            <href>http://maps.google.com/mapfiles/kml/shapes/rail.png</href>
+          </Icon>
+        </IconStyle>
+      </Style>
+    `).join("");
+
+    const folders = (area.systems || []).map((system) => {
+      const stations = (system.stations || []).filter(hasCoordinates);
+      if (!stations.length) return "";
+      const route = stations.length > 1 ? `
+        <Placemark>
+          <name>${escapeXml(system.name)} route</name>
+          <styleUrl>#${escapeXml(system.id)}-line</styleUrl>
+          <LineString>
+            <tessellate>1</tessellate>
+            <coordinates>
+              ${stations.map(kmlCoordinate).join("\n              ")}
+            </coordinates>
+          </LineString>
+        </Placemark>
+      ` : "";
+      const placemarks = stations.map((station, index) => `
+        <Placemark>
+          <name>${escapeXml(`${index + 1}. ${station.name}`)}</name>
+          <description>${escapeXml([system.name, station.query].filter(Boolean).join(" | "))}</description>
+          <styleUrl>#${escapeXml(system.id)}-station</styleUrl>
+          <Point>
+            <coordinates>${kmlCoordinate(station)}</coordinates>
+          </Point>
+        </Placemark>
+      `).join("");
+      return `
+        <Folder>
+          <name>${escapeXml(system.name)}</name>
+          ${route}
+          ${placemarks}
+        </Folder>
+      `;
+    }).join("");
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>${escapeXml(area.title)}</name>
+    <description>${escapeXml(area.summary || "")}</description>
+    ${styles}
+    ${folders}
+  </Document>
+</kml>
+`;
+  }
+
+  function downloadTransitKml(areaId) {
+    const area = (data.transitAreas || []).find((item) => item.id === areaId);
+    if (!area) return;
+    const hasRouteData = (area.systems || []).some((system) => (system.stations || []).some(hasCoordinates));
+    if (!hasRouteData) {
+      showToast("這個交通區塊沒有可匯出的座標。");
+      return;
+    }
+    const blob = new Blob([buildTransitKml(area)], { type: "application/vnd.google-earth.kml+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${area.id.replace(/^transit-/, "")}-lines.kml`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    showToast("已下載 KML，可匯入 Google My Maps。");
+  }
+
+  function transitPointFromButton(button) {
+    return {
+      name: button.dataset.transitName,
+      label: button.dataset.transitName,
+      query: button.dataset.transitQuery,
+      detail: button.dataset.transitDetail,
+      lat: button.dataset.transitLat,
+      lon: button.dataset.transitLon
+    };
+  }
+
   function renderTransit() {
     const target = $("#transitGrid");
     if (!target) return;
     const areas = data.transitAreas || [];
     target.innerHTML = areas.map((area) => {
       const defaultPoint = transitDefaultPoint(area);
+      const hasRouteData = (area.systems || []).some((system) => (system.stations || []).some(hasCoordinates));
       const systems = (area.systems || []).map((system) => `
         <section class="transit-system" style="--line-color: ${escapeHtml(system.color || "#2563eb")}">
           <div class="transit-system-head">
@@ -757,7 +970,9 @@
                   data-transit-kind-label="${escapeHtml(system.name)}"
                   data-transit-query="${escapeHtml(station.query)}"
                   data-transit-name="${escapeHtml(station.name)}"
-                  data-transit-detail="${escapeHtml(system.type)}">
+                  data-transit-detail="${escapeHtml(system.type)}"
+                  data-transit-lat="${escapeHtml(station.lat ?? "")}"
+                  data-transit-lon="${escapeHtml(station.lon ?? "")}">
                   <i aria-hidden="true">${index + 1}</i>
                   <span>${escapeHtml(station.label)}</span>
                 </button>
@@ -773,7 +988,9 @@
           data-transit-kind-label="單車 / 微移動"
           data-transit-query="${escapeHtml(point.query)}"
           data-transit-name="${escapeHtml(point.name)}"
-          data-transit-detail="${escapeHtml(point.detail)}">
+          data-transit-detail="${escapeHtml(point.detail)}"
+          data-transit-lat="${escapeHtml(point.lat ?? "")}"
+          data-transit-lon="${escapeHtml(point.lon ?? "")}">
           <span aria-hidden="true">⌖</span>
           <strong>${escapeHtml(point.label)}</strong>
           <small>${escapeHtml(point.detail)}</small>
@@ -784,6 +1001,14 @@
           <span aria-hidden="true">↗</span>${escapeHtml(link.label)}
         </a>
       `).join("");
+      const kmlButton = hasRouteData ? `
+        <button class="ghost-button" type="button" data-download-transit-kml="${escapeHtml(area.id)}">
+          <span aria-hidden="true">↓</span>My Maps KML
+        </button>
+        <a class="ghost-button" href="https://www.google.com/maps/d/" target="_blank" rel="noreferrer">
+          <span aria-hidden="true">↗</span>My Maps
+        </a>
+      ` : "";
       return `
         <article class="transit-card">
           <div class="transit-copy">
@@ -797,10 +1022,12 @@
             </div>
             <div class="card-actions">
               <button class="ghost-button" type="button" data-focus-map-query="${escapeHtml(area.mapQuery || defaultPoint.query)}" data-focus-map-label="${escapeHtml(area.title)}"><span aria-hidden="true">⌖</span>主地圖</button>
+              ${kmlButton}
               ${official}
             </div>
           </div>
           <div class="transit-map-card">
+            ${transitLinePreviewHtml(area)}
             <iframe data-transit-frame="${escapeHtml(area.id)}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src="${escapeHtml(googleMapPlaceEmbedUrl(area.mapQuery || defaultPoint.query, area.mapZoom || 12))}" title="Google Maps - ${escapeHtml(area.title)}"></iframe>
             <div class="transit-map-caption">
               <div class="transit-selected" data-transit-selected="${escapeHtml(area.id)}">
@@ -817,19 +1044,21 @@
   function setTransitCardMap(button) {
     const areaId = button.dataset.transitArea;
     const query = button.dataset.transitQuery;
+    const point = transitPointFromButton(button);
     const frame = document.querySelector(`[data-transit-frame="${areaId}"]`);
-    if (frame) frame.src = googleMapPlaceEmbedUrl(query, 15);
+    if (frame) frame.src = googleMapPointEmbedUrl(point, 16);
 
     const selection = document.querySelector(`[data-transit-selected="${areaId}"]`);
     if (selection) {
-      selection.innerHTML = transitSelectionMarkup({
-        name: button.dataset.transitName,
-        detail: button.dataset.transitDetail
-      }, button.dataset.transitKindLabel || "站點");
+      selection.innerHTML = transitSelectionMarkup(point, button.dataset.transitKindLabel || "站點");
     }
 
     const openLink = document.querySelector(`[data-transit-open="${areaId}"]`);
-    if (openLink) openLink.href = mapSearchUrl(query);
+    if (openLink) openLink.href = mapPointSearchUrl(point);
+
+    const area = (data.transitAreas || []).find((item) => item.id === areaId);
+    const lineMap = document.querySelector(`[data-transit-line-map="${areaId}"]`);
+    if (area && lineMap) lineMap.outerHTML = transitLinePreviewHtml(area, query);
 
     document.querySelectorAll(`[data-transit-area="${areaId}"]`).forEach((item) => {
       item.classList.toggle("is-selected", item === button);
@@ -1137,6 +1366,11 @@
       const transitButton = event.target.closest("[data-transit-query]");
       if (transitButton) {
         setTransitCardMap(transitButton);
+        return;
+      }
+      const kmlButton = event.target.closest("[data-download-transit-kml]");
+      if (kmlButton) {
+        downloadTransitKml(kmlButton.dataset.downloadTransitKml);
         return;
       }
       const button = event.target.closest("[data-focus-map-query]");
