@@ -453,6 +453,10 @@ main {
 
 .clock-card {
   position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
   min-height: 92px;
   padding: 12px;
   border: 1px solid var(--line);
@@ -477,16 +481,29 @@ main {
   font-size: 0.78rem !important;
   font-weight: 900;
   padding: 2px 8px;
-  margin-bottom: 6px;
+  margin-top: 6px;
 }
 
-.clock-card strong {
+.clock-place strong,
+.clock-time strong {
   display: block;
-  font-size: 1.72rem;
   line-height: 1.1;
 }
 
-.clock-card span {
+.clock-place strong {
+  font-size: 1.2rem;
+}
+
+.clock-time {
+  min-width: 118px;
+  text-align: right;
+}
+
+.clock-time strong {
+  font-size: 1.62rem;
+}
+
+.clock-place span:not(.clock-focus-label) {
   display: block;
   color: var(--muted);
   font-size: 0.92rem;
@@ -1492,8 +1509,16 @@ main {
     font-size: 2.45rem;
   }
 
-  .clock-card strong {
-    font-size: 1.48rem;
+  .clock-place strong {
+    font-size: 1.05rem;
+  }
+
+  .clock-time {
+    min-width: 104px;
+  }
+
+  .clock-time strong {
+    font-size: 1.42rem;
   }
 
   .route-preview {

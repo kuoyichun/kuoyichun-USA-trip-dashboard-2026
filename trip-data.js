@@ -157,7 +157,7 @@ window.TRIP_DATA = {
       duration: "13 小時 30 分鐘",
       fromDetail: "洛杉磯 LAX B 航廈",
       toDetail: "台北/桃園 TPE 第 2 航廈",
-      note: "跨日返台，台灣時間 7/6 清晨抵達。"
+      note: "跨日返台，台灣時間 7/6 凌晨 05:05 抵達。"
     }
   ],
   layovers: [
@@ -377,7 +377,7 @@ window.TRIP_DATA = {
     {
       id: "flight-tpe-sea",
       title: "飛往西雅圖",
-      subtitle: "JX032 台北到西雅圖，抵達後進行美國入境與轉機。",
+      subtitle: "JX032 台北/桃園 TPE 到西雅圖 SEA；西雅圖當地 6/21 下午 16:10 抵達，台灣時間 6/22 早上 07:10。",
       locationLabel: "飛行中",
       timezone: "Asia/Taipei",
       startIso: "2026-06-21T20:10:00+08:00",
@@ -399,7 +399,7 @@ window.TRIP_DATA = {
     {
       id: "flight-sea-clt",
       title: "飛往夏洛特",
-      subtitle: "AA2793 西雅圖到夏洛特，台灣時間 6/22 傍晚抵達。",
+      subtitle: "AA2793 西雅圖 SEA 到夏洛特 CLT；夏洛特當地 6/22 凌晨 05:39 抵達，台灣時間 6/22 下午 17:39。",
       locationLabel: "飛行中",
       timezone: "America/New_York",
       startIso: "2026-06-21T21:35:00-07:00",
@@ -421,7 +421,7 @@ window.TRIP_DATA = {
     {
       id: "flight-clt-den",
       title: "夏洛特飛丹佛",
-      subtitle: "UA1963 前往丹佛，抵達後前往 Laramie / Airbnb。",
+      subtitle: "UA1963 夏洛特 CLT 到丹佛 DEN；丹佛當地 6/28 早上 10:27 抵達，台灣時間 6/29 凌晨 00:27。",
       locationLabel: "飛行中",
       timezone: "America/Denver",
       startIso: "2026-06-28T08:40:00-04:00",
@@ -476,7 +476,7 @@ window.TRIP_DATA = {
     {
       id: "flight-den-lax",
       title: "丹佛飛洛杉磯",
-      subtitle: "AA4958 前往洛杉磯 LAX，抵達後銜接返台航班。",
+      subtitle: "AA4958 丹佛 DEN 到洛杉磯 LAX；洛杉磯當地 7/4 晚上 19:53 抵達，台灣時間 7/5 早上 10:53。",
       locationLabel: "飛行中",
       timezone: "America/Los_Angeles",
       startIso: "2026-07-04T18:12:00-06:00",
@@ -498,7 +498,7 @@ window.TRIP_DATA = {
     {
       id: "flight-lax-tpe",
       title: "返台飛行",
-      subtitle: "JX001 洛杉磯到桃園，台灣時間 7/6 清晨抵達。",
+      subtitle: "JX001 洛杉磯 LAX 到台北/桃園 TPE；台灣時間 7/6 凌晨 05:05 抵達。",
       locationLabel: "飛行中",
       timezone: "Asia/Taipei",
       startIso: "2026-07-05T00:35:00-07:00",

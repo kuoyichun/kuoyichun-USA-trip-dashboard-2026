@@ -97,6 +97,16 @@
     };
   }
 
+  function formatRemainingDuration(ms) {
+    const totalMinutes = Math.max(0, Math.ceil(ms / 60000));
+    if (totalMinutes <= 1) return "1m";
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (!hours) return `${minutes}m`;
+    if (!minutes) return `${hours}hr`;
+    return `${hours}hr${minutes}m`;
+  }
+
   function formatDateLabel(dateValue) {
     if (!dateValue) return "日期未定";
     const date = new Date(`${dateValue}T12:00:00+08:00`);
@@ -238,6 +248,41 @@
     return byStage[stage?.id] || { displayCode: "TPE", highlightCode: "", label: `${stage?.locationLabel || "台灣"} 當地時間`, badge: "" };
   }
 
+  function flightForStage(stage) {
+    if (!stage || stage.locationLabel !== "飛行中") return null;
+    const start = new Date(stage.startIso).getTime();
+    const end = new Date(stage.endIso).getTime();
+    return data.flights.find((flight) => (
+      new Date(flight.departIso).getTime() === start &&
+      new Date(flight.arriveIso).getTime() === end
+    )) || null;
+  }
+
+  function stageSubtitle(stage, now) {
+    const flight = flightForStage(stage);
+    if (!flight) return stage.subtitle;
+    const from = airports[flight.from];
+    const to = airports[flight.to];
+    const arriveLocal = formatDateTimeWithPeriod(flight.arriveIso, to.timezone);
+    const arriveTaiwan = formatDateTimeWithPeriod(flight.arriveIso, HOME_TZ);
+    const arriveDate = new Date(flight.arriveIso);
+    const departDate = new Date(flight.departIso);
+    const remaining = now >= departDate && now < arriveDate
+      ? `目前飛行中，剩餘 ${formatRemainingDuration(arriveDate - now)} 抵達。`
+      : "";
+    return [
+      `${flight.id} ${from.cityZh} ${flight.from} → ${to.cityZh} ${flight.to}。`,
+      `當地抵達：${arriveLocal.full} ${zoneAbbr(flight.arriveIso, to.timezone)}。`,
+      `台灣時間：${arriveTaiwan.full}。`,
+      remaining
+    ].filter(Boolean).join(" ");
+  }
+
+  function clockPlaceLabel(code, airport) {
+    if (code === "TPE") return "台灣";
+    return airport.cityZh;
+  }
+
   function renderClocks() {
     const codes = ["TPE", "SEA", "CLT", "DEN", "LAX"];
     const stage = currentJourneyStage();
@@ -248,10 +293,15 @@
       const isActive = code === clockInfo.highlightCode && code !== "TPE";
       return `
         <div class="clock-card ${isActive ? "is-active" : ""}">
-          ${isActive ? `<span class="clock-focus-label">${escapeHtml(clockInfo.badge)}</span>` : ""}
-          <strong>${escapeHtml(clock.displayTime)}</strong>
-          <span>${escapeHtml(code)} · ${escapeHtml(airport.cityZh)} / ${escapeHtml(airport.airportZh)}</span>
-          <span>${escapeHtml(clock.date)}</span>
+          <div class="clock-place">
+            <strong>${escapeHtml(clockPlaceLabel(code, airport))}</strong>
+            <span>${escapeHtml(code)} · ${escapeHtml(airport.airportZh)}</span>
+            <span>${escapeHtml(clock.date)}</span>
+            ${isActive ? `<span class="clock-focus-label">${escapeHtml(clockInfo.badge)}</span>` : ""}
+          </div>
+          <div class="clock-time">
+            <strong>${escapeHtml(clock.displayTime)}</strong>
+          </div>
         </div>
       `;
     }).join("");
@@ -349,7 +399,7 @@
     const taiwanClock = formatClock(HOME_TZ, now);
 
     $("#currentStageTitle").textContent = stage.title;
-    $("#currentStageSubtitle").textContent = stage.subtitle;
+    $("#currentStageSubtitle").textContent = stageSubtitle(stage, now);
     $("#currentLocalLabel").textContent = clockInfo.label;
     $("#currentLocalTime").textContent = localClock.displayTime;
     $("#currentLocalDate").textContent = localClock.date;
