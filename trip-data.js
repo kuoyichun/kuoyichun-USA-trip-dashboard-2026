@@ -211,6 +211,245 @@ window.TRIP_DATA = {
       pack: "輕便雨具、返台交通備案"
     }
   ],
+  journeyStages: [
+    {
+      id: "pre-departure",
+      title: "台灣出發準備",
+      subtitle: "前往桃園機場，準備搭 JX032 飛往西雅圖。",
+      locationLabel: "台北 / 桃園",
+      timezone: "Asia/Taipei",
+      startIso: "2026-06-21T00:00:00+08:00",
+      endIso: "2026-06-21T20:10:00+08:00",
+      nextLabel: "下一步：20:10 從 TPE 起飛",
+      mapQuery: "Taiwan Taoyuan International Airport"
+    },
+    {
+      id: "flight-tpe-sea",
+      title: "飛往西雅圖",
+      subtitle: "JX032 台北到西雅圖，抵達後進行美國入境與轉機。",
+      locationLabel: "飛行中",
+      timezone: "Asia/Taipei",
+      startIso: "2026-06-21T20:10:00+08:00",
+      endIso: "2026-06-21T16:10:00-07:00",
+      nextLabel: "下一步：SEA 入境與轉機",
+      mapQuery: "Seattle-Tacoma International Airport"
+    },
+    {
+      id: "transfer-sea",
+      title: "西雅圖轉機",
+      subtitle: "美國第一站，通常要入境、領行李、海關與重新安檢。",
+      locationLabel: "西雅圖 SEA",
+      timezone: "America/Los_Angeles",
+      startIso: "2026-06-21T16:10:00-07:00",
+      endIso: "2026-06-21T21:35:00-07:00",
+      nextLabel: "下一步：21:35 搭 AA2793 前往夏洛特",
+      mapQuery: "Seattle-Tacoma International Airport"
+    },
+    {
+      id: "flight-sea-clt",
+      title: "飛往夏洛特",
+      subtitle: "AA2793 西雅圖到夏洛特，台灣時間 6/22 傍晚抵達。",
+      locationLabel: "飛行中",
+      timezone: "America/New_York",
+      startIso: "2026-06-21T21:35:00-07:00",
+      endIso: "2026-06-22T05:39:00-04:00",
+      nextLabel: "下一步：抵達 CLT 後前往 Hyatt Place Charlotte",
+      mapQuery: "Charlotte Douglas International Airport"
+    },
+    {
+      id: "charlotte-stay",
+      title: "夏洛特停留",
+      subtitle: "住宿 Hyatt Place Charlotte / University Research Park；這幾天會去 UNC Charlotte。",
+      locationLabel: "夏洛特",
+      timezone: "America/New_York",
+      startIso: "2026-06-22T05:39:00-04:00",
+      endIso: "2026-06-28T08:40:00-04:00",
+      nextLabel: "下一步：6/28 08:40 從 CLT 飛往丹佛",
+      mapQuery: "Hyatt Place Charlotte/University Research Park 640 University Center Blvd Charlotte NC"
+    },
+    {
+      id: "flight-clt-den",
+      title: "夏洛特飛丹佛",
+      subtitle: "UA1963 前往丹佛，抵達後前往 Laramie / Airbnb。",
+      locationLabel: "飛行中",
+      timezone: "America/Denver",
+      startIso: "2026-06-28T08:40:00-04:00",
+      endIso: "2026-06-28T10:27:00-06:00",
+      nextLabel: "下一步：前往 Laramie Airbnb",
+      mapQuery: "Denver International Airport"
+    },
+    {
+      id: "den-to-laramie",
+      title: "取車後前往 Laramie / Airbnb",
+      subtitle: "11:30 在丹佛機場租車櫃台取車，搭免費接駁車，再開往 Laramie。",
+      locationLabel: "丹佛到 Laramie",
+      timezone: "America/Denver",
+      startIso: "2026-06-28T10:27:00-06:00",
+      endIso: "2026-06-28T16:00:00-06:00",
+      nextLabel: "下一步：11:30 取車，16:00 Airbnb 入住",
+      mapQuery: "24050 E 78th Ave Denver CO 80249"
+    },
+    {
+      id: "laramie-airbnb",
+      title: "Laramie / Airbnb 停留",
+      subtitle: "住宿 766 Hyacinth House；這幾天會去 University of Wyoming。",
+      locationLabel: "Laramie, Wyoming",
+      timezone: "America/Denver",
+      startIso: "2026-06-28T16:00:00-06:00",
+      endIso: "2026-07-03T10:00:00-06:00",
+      nextLabel: "下一步：7/3 10:00 Airbnb 退房，移動到丹佛機場飯店",
+      mapQuery: "766 North 12th Street Laramie WY 82072"
+    },
+    {
+      id: "laramie-to-denver-hotel",
+      title: "前往丹佛機場飯店",
+      subtitle: "Airbnb 退房後，移動到 Hyatt Place Pena Station Denver Airport。",
+      locationLabel: "Laramie 到丹佛",
+      timezone: "America/Denver",
+      startIso: "2026-07-03T10:00:00-06:00",
+      endIso: "2026-07-03T15:00:00-06:00",
+      nextLabel: "下一步：入住丹佛機場飯店",
+      mapQuery: "Hyatt Place Pena Station Denver Airport 6110 North Panasonic Way Denver CO"
+    },
+    {
+      id: "denver-airport-hotel",
+      title: "丹佛機場住宿",
+      subtitle: "住宿 Hyatt Place Pena Station Denver Airport，7/4 15:00 先還車，再飛往 LAX。",
+      locationLabel: "丹佛機場",
+      timezone: "America/Denver",
+      startIso: "2026-07-03T15:00:00-06:00",
+      endIso: "2026-07-04T18:12:00-06:00",
+      nextLabel: "下一步：7/4 15:00 還車，18:12 從 DEN 飛往 LAX",
+      mapQuery: "24050 E 78th Ave Denver CO 80249"
+    },
+    {
+      id: "flight-den-lax",
+      title: "丹佛飛洛杉磯",
+      subtitle: "AA4958 前往 LAX，抵達後銜接返台航班。",
+      locationLabel: "飛行中",
+      timezone: "America/Los_Angeles",
+      startIso: "2026-07-04T18:12:00-06:00",
+      endIso: "2026-07-04T19:53:00-07:00",
+      nextLabel: "下一步：LAX 轉機返台",
+      mapQuery: "Los Angeles International Airport"
+    },
+    {
+      id: "transfer-lax",
+      title: "LAX 返台前轉機",
+      subtitle: "晚間抵達 LAX，接 7/5 00:35 星宇 JX001 返台。",
+      locationLabel: "洛杉磯 LAX",
+      timezone: "America/Los_Angeles",
+      startIso: "2026-07-04T19:53:00-07:00",
+      endIso: "2026-07-05T00:35:00-07:00",
+      nextLabel: "下一步：00:35 搭 JX001 返台",
+      mapQuery: "Los Angeles International Airport"
+    },
+    {
+      id: "flight-lax-tpe",
+      title: "返台飛行",
+      subtitle: "JX001 洛杉磯到桃園，台灣時間 7/6 清晨抵達。",
+      locationLabel: "飛行中",
+      timezone: "Asia/Taipei",
+      startIso: "2026-07-05T00:35:00-07:00",
+      endIso: "2026-07-06T05:05:00+08:00",
+      nextLabel: "下一步：7/6 05:05 抵達 TPE",
+      mapQuery: "Taiwan Taoyuan International Airport"
+    },
+    {
+      id: "arrived-home",
+      title: "已抵達台灣",
+      subtitle: "旅程結束，確認返家交通與休息。",
+      locationLabel: "台灣",
+      timezone: "Asia/Taipei",
+      startIso: "2026-07-06T05:05:00+08:00",
+      endIso: "2026-07-07T23:59:00+08:00",
+      nextLabel: "旅程完成",
+      mapQuery: "Taiwan Taoyuan International Airport"
+    }
+  ],
+  stays: [
+    {
+      id: "stay-charlotte-hyatt",
+      type: "飯店",
+      city: "CLT",
+      title: "Hyatt Place Charlotte / University Research Park",
+      shortLabel: "Hyatt CLT",
+      dateRange: "6/22-6/28",
+      checkIn: "2026/6/22",
+      checkOut: "2026/6/28",
+      address: "640 University Center Blvd, University City Area, Charlotte, NC 28262-1513, United States",
+      mapQuery: "Hyatt Place Charlotte/University Research Park 640 University Center Blvd Charlotte NC",
+      purpose: "住宿期間會去北卡羅來納大學夏洛特分校",
+      nearbyName: "UNC Charlotte",
+      nearbyQuery: "University of North Carolina at Charlotte"
+    },
+    {
+      id: "stay-laramie-airbnb",
+      type: "Airbnb",
+      city: "DEN",
+      title: "766 Hyacinth House",
+      shortLabel: "Airbnb Laramie",
+      dateRange: "6/28-7/3",
+      checkIn: "6/28 16:00",
+      checkOut: "7/3 10:00",
+      address: "766 North 12th Street, Laramie, WY 82072, United States",
+      mapQuery: "766 North 12th Street Laramie WY 82072",
+      purpose: "住宿期間會去懷俄明大學",
+      nearbyName: "University of Wyoming",
+      nearbyQuery: "University of Wyoming"
+    },
+    {
+      id: "stay-denver-hyatt",
+      type: "飯店",
+      city: "DEN",
+      title: "Hyatt Place Pena Station Denver Airport",
+      shortLabel: "Hyatt DEN",
+      dateRange: "7/3-7/4",
+      checkIn: "2026/7/3",
+      checkOut: "2026/7/4",
+      address: "6110 North Panasonic Way, Denver International Airport, Denver, CO 80249-6702, United States",
+      mapQuery: "Hyatt Place Pena Station Denver Airport 6110 North Panasonic Way Denver CO",
+      purpose: "丹佛機場前一晚住宿，隔天飛往 LAX",
+      nearbyName: "Denver International Airport",
+      nearbyQuery: "Denver International Airport"
+    }
+  ],
+  rentals: [
+    {
+      id: "rental-denver-airport",
+      type: "租車",
+      provider: "United 航空租車",
+      title: "丹佛機場租車",
+      shortLabel: "DEN 租車",
+      pickup: "6/28 11:30",
+      dropoff: "7/4 15:00",
+      pickupLocation: "丹佛機場",
+      dropoffLocation: "丹佛機場",
+      address: "24050 E 78th Ave, Denver, CO 80249",
+      phone: "303-342-9001",
+      shuttle: "提車方式：免費接駁車。若搭飛機抵達，租賃櫃台在航站樓內有穿梭車。",
+      mapQuery: "24050 E 78th Ave Denver CO 80249",
+      note: "6/28 抵達 DEN 後取車前往 Laramie；7/4 飛 LAX 前 15:00 還車。"
+    }
+  ],
+  keyPlaces: [
+    {
+      id: "place-unc-charlotte",
+      label: "UNC Charlotte",
+      title: "北卡羅來納大學夏洛特分校",
+      city: "CLT",
+      mapQuery: "University of North Carolina at Charlotte",
+      note: "夏洛特住宿期間會前往。"
+    },
+    {
+      id: "place-university-wyoming",
+      label: "University of Wyoming",
+      title: "懷俄明大學",
+      city: "DEN",
+      mapQuery: "University of Wyoming",
+      note: "Airbnb / Laramie 停留期間會前往。"
+    }
+  ],
   defaultItems: [
     {
       id: "default-flight-tpe-sea-clt",
@@ -226,12 +465,23 @@ window.TRIP_DATA = {
     {
       id: "default-charlotte-stay",
       type: "住宿",
-      title: "夏洛特住宿待更新",
+      title: "Hyatt Place Charlotte / University Research Park",
       date: "2026-06-22",
       time: "",
       city: "CLT",
-      mapUrl: "",
-      notes: "建議用飯店截圖更新：入住 6/22，退房 6/28。",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=Hyatt+Place+Charlotte%2FUniversity+Research+Park+640+University+Center+Blvd+Charlotte+NC",
+      notes: "入住 6/22，退房 6/28。地址：640 University Center Blvd, Charlotte, NC。住宿期間會去 UNC Charlotte。",
+      locked: true
+    },
+    {
+      id: "default-unc-charlotte",
+      type: "景點",
+      title: "北卡羅來納大學夏洛特分校 UNC Charlotte",
+      date: "2026-06-23",
+      time: "",
+      city: "CLT",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=University+of+North+Carolina+at+Charlotte",
+      notes: "夏洛特住宿期間要去的主要地點，實際日期可之後再調整。",
       locked: true
     },
     {
@@ -248,12 +498,45 @@ window.TRIP_DATA = {
     {
       id: "default-denver-stay",
       type: "住宿",
-      title: "丹佛住宿與租車待更新",
+      title: "Airbnb：766 Hyacinth House",
       date: "2026-06-28",
+      time: "16:00",
+      city: "DEN",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=766+North+12th+Street+Laramie+WY+82072",
+      notes: "6/28 16:00 入住，7/3 10:00 退房。地址：766 North 12th Street, Laramie, WY 82072。住宿期間會去 University of Wyoming。",
+      locked: true
+    },
+    {
+      id: "default-denver-rental-pickup",
+      type: "租車",
+      title: "丹佛機場租車取車",
+      date: "2026-06-28",
+      time: "11:30",
+      city: "DEN",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=24050+E+78th+Ave+Denver+CO+80249",
+      notes: "United 航空租車。提車方式：免費接駁車。地址：24050 E 78th Ave, Denver, CO 80249。櫃台電話：303-342-9001。",
+      locked: true
+    },
+    {
+      id: "default-university-wyoming",
+      type: "景點",
+      title: "懷俄明大學 University of Wyoming",
+      date: "2026-06-29",
       time: "",
       city: "DEN",
-      mapUrl: "",
-      notes: "建議用飯店與租車截圖更新：丹佛停留到 7/4 傍晚。",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=University+of+Wyoming",
+      notes: "Laramie / Airbnb 停留期間要去的主要地點，實際日期可之後再調整。",
+      locked: true
+    },
+    {
+      id: "default-denver-airport-hotel",
+      type: "住宿",
+      title: "Hyatt Place Pena Station Denver Airport",
+      date: "2026-07-03",
+      time: "",
+      city: "DEN",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=Hyatt+Place+Pena+Station+Denver+Airport+6110+North+Panasonic+Way+Denver+CO",
+      notes: "入住 7/3，退房 7/4。地址：6110 North Panasonic Way, Denver, CO 80249-6702。",
       locked: true
     },
     {
@@ -266,36 +549,20 @@ window.TRIP_DATA = {
       mapUrl: "https://www.google.com/maps/search/?api=1&query=Denver+International+Airport",
       notes: "AA4958 + JX001；台灣時間 7/6 05:05 抵達 TPE。",
       locked: true
+    },
+    {
+      id: "default-denver-rental-dropoff",
+      type: "租車",
+      title: "丹佛機場租車還車",
+      date: "2026-07-04",
+      time: "15:00",
+      city: "DEN",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=24050+E+78th+Ave+Denver+CO+80249",
+      notes: "7/4 15:00 在丹佛機場還車；之後搭 18:12 AA4958 前往 LAX。",
+      locked: true
     }
   ],
   pendingSlots: [
-    {
-      id: "hotel-clt",
-      type: "住宿",
-      city: "CLT",
-      title: "夏洛特住宿",
-      date: "2026-06-22",
-      dateRange: "入住 6/22，退房 6/28",
-      detail: "等飯店截圖後更新地址、入住時間、訂房編號與 Google Maps 連結。"
-    },
-    {
-      id: "hotel-den",
-      type: "住宿",
-      city: "DEN",
-      title: "丹佛住宿",
-      date: "2026-06-28",
-      dateRange: "入住 6/28，退房 7/4",
-      detail: "等飯店截圖後更新，並檢查是否需要停車費或 resort fee。"
-    },
-    {
-      id: "rental-den",
-      type: "租車",
-      city: "DEN",
-      title: "丹佛租車",
-      date: "2026-06-28",
-      dateRange: "可能為 DEN 取車，7/4 還車",
-      detail: "補上取還車地點、營業時間、保險、導航地址與加油規則。"
-    },
     {
       id: "food",
       type: "餐廳",
@@ -311,8 +578,8 @@ window.TRIP_DATA = {
       city: "DEN",
       title: "景點與每日安排",
       date: "2026-06-28",
-      dateRange: "6/22-7/4",
-      detail: "新增景點後可依日期排序；不確定日期時先留空，再拖到正確日期附近。"
+      dateRange: "夏洛特 / Laramie / 丹佛",
+      detail: "UNC Charlotte 與 University of Wyoming 已加入；其他景點可用 Google Maps 連結繼續補。"
     },
     {
       id: "lax-buffer",
