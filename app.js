@@ -57,21 +57,20 @@
     return parts.find((part) => part.type === "timeZoneName")?.value ?? "";
   }
 
-  function formatClock(timeZone) {
-    const now = new Date();
+  function formatClock(timeZone, sourceDate = new Date()) {
     const time = new Intl.DateTimeFormat("zh-TW", {
       timeZone,
       hour: "2-digit",
       minute: "2-digit",
       hour12: false
-    }).format(now);
-    const date = new Intl.DateTimeFormat("zh-TW", {
+    }).format(sourceDate);
+    const day = new Intl.DateTimeFormat("zh-TW", {
       timeZone,
       month: "numeric",
       day: "numeric",
       weekday: "short"
-    }).format(now);
-    return { time, date };
+    }).format(sourceDate);
+    return { time, date: day };
   }
 
   function formatDateLabel(dateValue) {
@@ -213,6 +212,54 @@
     }).join("");
   }
 
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function currentJourneyStage(now = new Date()) {
+    const stages = data.journeyStages || [];
+    if (!stages.length) return null;
+    const first = stages[0];
+    const last = stages[stages.length - 1];
+    if (now < new Date(first.startIso)) {
+      return {
+        ...first,
+        title: "尚未出發",
+        subtitle: "旅程還沒開始，先確認護照、住宿、交通與行李。",
+        nextLabel: first.nextLabel
+      };
+    }
+    return stages.find((stage) => {
+      const start = new Date(stage.startIso);
+      const end = new Date(stage.endIso);
+      return now >= start && now < end;
+    }) || last;
+  }
+
+  function renderTripStatus() {
+    const now = new Date();
+    const stage = currentJourneyStage(now);
+    if (!stage) return;
+    const localClock = formatClock(stage.timezone, now);
+    const taiwanClock = formatClock(HOME_TZ, now);
+    const tripStart = new Date(data.journeyStages[0].startIso);
+    const tripArrival = new Date((data.journeyStages.find((item) => item.id === "arrived-home") || data.journeyStages.at(-1)).startIso);
+    const progress = clamp(((now - tripStart) / (tripArrival - tripStart)) * 100, 0, 100);
+
+    $("#currentStageTitle").textContent = stage.title;
+    $("#currentStageSubtitle").textContent = stage.subtitle;
+    $("#currentLocalLabel").textContent = `${stage.locationLabel} 當地時間`;
+    $("#currentLocalTime").textContent = localClock.time;
+    $("#currentLocalDate").textContent = localClock.date;
+    $("#currentTaiwanTime").textContent = taiwanClock.time;
+    $("#currentTaiwanDate").textContent = taiwanClock.date;
+    $("#currentNextStep").textContent = stage.nextLabel;
+    $("#tripProgressBar").style.width = `${progress.toFixed(0)}%`;
+    $("#tripProgressLabel").textContent = `整趟旅程進度約 ${progress.toFixed(0)}%`;
+    const stageMap = $("#currentStageMap");
+    stageMap.href = mapSearchUrl(stage.mapQuery || stage.locationLabel);
+  }
+
   function renderFlights() {
     $("#flightList").innerHTML = data.flights.map((flight) => {
       const from = airports[flight.from];
@@ -279,6 +326,24 @@
         label: `${airport.code} ${airport.cityZh}`,
         caption: `${airport.airportZh} / ${airport.airportEn}`,
         src: googleMapPlaceEmbedUrl(airport.mapQuery, 12)
+      })),
+      ...(data.stays || []).map((stay) => ({
+        id: stay.id,
+        label: stay.shortLabel || stay.title,
+        caption: `${stay.title}：${stay.address}`,
+        src: googleMapPlaceEmbedUrl(stay.mapQuery, 14)
+      })),
+      ...(data.rentals || []).map((rental) => ({
+        id: rental.id,
+        label: rental.shortLabel || rental.title,
+        caption: `${rental.title}：${rental.address}`,
+        src: googleMapPlaceEmbedUrl(rental.mapQuery, 14)
+      })),
+      ...(data.keyPlaces || []).map((place) => ({
+        id: place.id,
+        label: place.label,
+        caption: `${place.title}：${place.note}`,
+        src: googleMapPlaceEmbedUrl(place.mapQuery, 14)
       }))
     ];
   }
@@ -353,6 +418,47 @@
         </article>
       `;
     }).join("");
+  }
+
+  function renderStays() {
+    const stays = data.stays || [];
+    const stayCards = stays.map((stay) => `
+      <article class="stay-card">
+        <span class="stay-type">${escapeHtml(stay.type)} · ${escapeHtml(stay.dateRange)}</span>
+        <h3>${escapeHtml(stay.title)}</h3>
+        <dl class="stay-detail-list">
+          <div><dt>入住</dt><dd>${escapeHtml(stay.checkIn)}</dd></div>
+          <div><dt>退房</dt><dd>${escapeHtml(stay.checkOut)}</dd></div>
+          <div><dt>地址</dt><dd>${escapeHtml(stay.address)}</dd></div>
+          <div><dt>重點</dt><dd>${escapeHtml(stay.purpose)}</dd></div>
+        </dl>
+        <div class="card-actions">
+          <button class="ghost-button" type="button" data-focus-map-query="${escapeHtml(stay.mapQuery)}" data-focus-map-label="${escapeHtml(stay.title)}"><span aria-hidden="true">⌖</span>小地圖</button>
+          <a class="ghost-button" href="${mapSearchUrl(stay.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">↗</span>住宿地圖</a>
+          <a class="ghost-button" href="${mapSearchUrl(stay.nearbyQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">↗</span>${escapeHtml(stay.nearbyName)}</a>
+        </div>
+      </article>
+    `);
+    const rentalCards = (data.rentals || []).map((rental) => `
+      <article class="stay-card rental-card">
+        <span class="stay-type">${escapeHtml(rental.type)} · ${escapeHtml(rental.provider)}</span>
+        <h3>${escapeHtml(rental.title)}</h3>
+        <dl class="stay-detail-list">
+          <div><dt>取車</dt><dd>${escapeHtml(rental.pickup)} · ${escapeHtml(rental.pickupLocation)}</dd></div>
+          <div><dt>還車</dt><dd>${escapeHtml(rental.dropoff)} · ${escapeHtml(rental.dropoffLocation)}</dd></div>
+          <div><dt>地址</dt><dd>${escapeHtml(rental.address)}</dd></div>
+          <div><dt>電話</dt><dd><a href="tel:${escapeHtml(rental.phone)}">${escapeHtml(rental.phone)}</a></dd></div>
+          <div><dt>方式</dt><dd>${escapeHtml(rental.shuttle)}</dd></div>
+          <div><dt>備註</dt><dd>${escapeHtml(rental.note)}</dd></div>
+        </dl>
+        <div class="card-actions">
+          <button class="ghost-button" type="button" data-focus-map-query="${escapeHtml(rental.mapQuery)}" data-focus-map-label="${escapeHtml(rental.title)}"><span aria-hidden="true">⌖</span>小地圖</button>
+          <a class="ghost-button" href="${mapSearchUrl(rental.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">↗</span>租車地圖</a>
+          <a class="ghost-button" href="tel:${escapeHtml(rental.phone)}"><span aria-hidden="true">☎</span>打電話</a>
+        </div>
+      </article>
+    `);
+    $("#stayGrid").innerHTML = [...stayCards, ...rentalCards].join("");
   }
 
   function renderCityOptions() {
@@ -643,6 +749,13 @@
       if (button) prefillEntry(button.dataset.prefillSlot);
     });
 
+    $("#stayGrid").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-focus-map-query]");
+      if (!button) return;
+      setEmbeddedMap(button.dataset.focusMapQuery, button.dataset.focusMapLabel, 14);
+      document.getElementById("map")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
     $("#checklistBox").addEventListener("change", (event) => {
       const input = event.target.closest("[data-check-id]");
       if (!input) return;
@@ -680,12 +793,17 @@
   }
 
   function init() {
+    renderTripStatus();
     renderClocks();
-    window.setInterval(renderClocks, 60000);
+    window.setInterval(() => {
+      renderTripStatus();
+      renderClocks();
+    }, 60000);
     renderFlights();
     renderRouteMap();
     renderAirports();
     renderClimate();
+    renderStays();
     renderCityOptions();
     rerenderPlanner();
     renderPending();
