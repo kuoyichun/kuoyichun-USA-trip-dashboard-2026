@@ -155,7 +155,8 @@ main {
 }
 
 .summary-panel {
-  min-height: 300px;
+  grid-column: 1 / -1;
+  min-height: 360px;
   padding: clamp(22px, 5vw, 42px);
   background:
     linear-gradient(135deg, rgba(15, 118, 110, 0.13), rgba(37, 99, 235, 0.1) 48%, rgba(180, 83, 9, 0.12)),
@@ -163,10 +164,10 @@ main {
 }
 
 .summary-panel h1 {
-  max-width: 760px;
-  margin: 8px 0 22px;
-  font-size: clamp(2rem, 5vw, 4.6rem);
-  line-height: 1;
+  max-width: 920px;
+  margin: 8px 0 12px;
+  font-size: clamp(2.8rem, 7vw, 5.8rem);
+  line-height: 0.98;
 }
 
 .eyebrow {
@@ -194,6 +195,197 @@ main {
   background: rgba(255, 255, 255, 0.74);
   color: var(--ink);
   font-weight: 800;
+}
+
+.stage-hero {
+  display: grid;
+  gap: 18px;
+}
+
+.stage-subtitle {
+  max-width: 900px;
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(1.15rem, 2.4vw, 1.55rem);
+}
+
+.stage-clock-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 14px;
+  max-width: 900px;
+}
+
+.big-clock-card {
+  min-height: 150px;
+  border: 2px solid rgba(15, 118, 110, 0.2);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.86);
+  padding: clamp(16px, 3vw, 24px);
+}
+
+.big-clock-card.taiwan {
+  border-color: rgba(37, 99, 235, 0.24);
+}
+
+.big-clock-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.big-clock-card strong {
+  display: block;
+  margin: 6px 0;
+  font-size: clamp(2.4rem, 7vw, 4.7rem);
+  line-height: 0.95;
+}
+
+.big-clock-card small {
+  display: block;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.stage-next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  max-width: 900px;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.stage-next span {
+  display: block;
+  color: var(--amber);
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.stage-next strong {
+  display: block;
+  margin-top: 2px;
+  font-size: clamp(1.2rem, 2.8vw, 1.65rem);
+}
+
+.journey-timeline {
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 12px 4px 16px;
+}
+
+.timeline-node {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  min-width: 104px;
+  text-align: center;
+}
+
+.timeline-dot {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: var(--muted);
+  box-shadow: 0 0 0 2px rgba(23, 32, 51, 0.18);
+}
+
+.timeline-node strong {
+  margin-top: 8px;
+  font-size: 0.98rem;
+  line-height: 1.2;
+}
+
+.timeline-node small {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.timeline-node.is-active .timeline-dot {
+  background: var(--teal);
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.2);
+}
+
+.timeline-node.is-active strong {
+  color: #0f5f59;
+}
+
+.timeline-link {
+  position: relative;
+  display: grid;
+  align-content: center;
+  flex: var(--link-weight, 1) 1 80px;
+  min-width: clamp(74px, calc(var(--link-weight, 1) * 42px), 260px);
+  padding: 0 4px;
+  text-align: center;
+}
+
+.timeline-link span {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(23, 32, 51, 0.16);
+}
+
+.timeline-link strong {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+.timeline-link small {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.timeline-link.is-active span {
+  background: linear-gradient(90deg, var(--teal), var(--sky));
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+
+.timeline-link.is-active strong,
+.timeline-link.is-active small {
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.duration-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  max-width: 900px;
+}
+
+.duration-strip article {
+  min-height: 104px;
+  padding: 12px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.duration-strip span,
+.duration-strip small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.duration-strip strong {
+  display: block;
+  margin: 4px 0;
+  font-size: 1.05rem;
+  line-height: 1.25;
 }
 
 .metric-row {
@@ -246,6 +438,13 @@ main {
   line-height: 1.18;
 }
 
+.section-subtitle {
+  max-width: 680px;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
 .clock-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -253,22 +452,44 @@ main {
 }
 
 .clock-card {
-  min-height: 78px;
+  position: relative;
+  min-height: 92px;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-strong);
 }
 
+.clock-card.is-active {
+  border: 2px solid var(--teal);
+  background: #d8f1ee;
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.16);
+}
+
+.clock-focus-label {
+  display: inline-flex;
+  width: max-content;
+  min-height: 24px;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--teal);
+  color: #fff !important;
+  font-size: 0.78rem !important;
+  font-weight: 900;
+  padding: 2px 8px;
+  margin-bottom: 6px;
+}
+
 .clock-card strong {
   display: block;
-  font-size: 1.18rem;
+  font-size: 1.72rem;
+  line-height: 1.1;
 }
 
 .clock-card span {
   display: block;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.92rem;
 }
 
 .priority-list {
@@ -399,11 +620,10 @@ main {
 
 .flight-list {
   display: grid;
-  grid-template-columns: repeat(5, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 12px;
-  overflow-x: auto;
+  overflow-x: visible;
   padding-bottom: 8px;
-  scroll-snap-type: x proximity;
 }
 
 .flight-card,
@@ -418,9 +638,8 @@ main {
 }
 
 .flight-card {
-  min-width: 240px;
+  min-width: 0;
   padding: 16px;
-  scroll-snap-align: start;
 }
 
 .flight-topline {
@@ -491,7 +710,7 @@ main {
   display: block;
   margin-top: 8px;
   color: var(--violet);
-  font-size: 1.8rem;
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
   font-weight: 900;
 }
 
@@ -552,6 +771,124 @@ main {
   padding: 0;
 }
 
+.route-preview {
+  position: relative;
+  min-height: clamp(220px, 28vw, 330px);
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, rgba(37, 99, 235, 0.06) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(37, 99, 235, 0.06) 1px, transparent 1px),
+    linear-gradient(180deg, #e9f7fb, #f7fbff);
+  background-size: 48px 48px, 48px 48px, auto;
+}
+
+.route-preview::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.route-preview-empty {
+  display: grid;
+  min-height: 140px;
+  place-content: center;
+  padding: 18px;
+  text-align: center;
+}
+
+.route-preview-empty span {
+  color: var(--muted);
+}
+
+.route-preview-meta {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  z-index: 2;
+  max-width: min(440px, calc(100% - 28px));
+  padding: 10px 12px;
+  border: 1px solid rgba(215, 222, 232, 0.9);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 26px rgba(23, 32, 51, 0.08);
+}
+
+.route-preview-meta strong,
+.route-preview-meta span {
+  display: block;
+}
+
+.route-preview-meta strong {
+  font-size: 1rem;
+}
+
+.route-preview-meta span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.route-preview-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.route-preview-svg polyline {
+  fill: none;
+  stroke: var(--teal);
+  stroke-dasharray: 2 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-pin {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  max-width: 150px;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.map-pin i {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--rose);
+  color: #fff;
+  font-style: normal;
+  font-size: 0.82rem;
+  font-weight: 900;
+  box-shadow: 0 8px 20px rgba(23, 32, 51, 0.22);
+}
+
+.map-pin i {
+  line-height: 1;
+}
+
+.map-pin b {
+  max-width: 150px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  font-size: 0.78rem;
+  line-height: 1.25;
+  box-shadow: 0 6px 16px rgba(23, 32, 51, 0.12);
+}
+
 .route-map iframe {
   display: block;
   width: 100%;
@@ -573,7 +910,8 @@ main {
 
 .airport-grid,
 .climate-grid,
-.pending-grid {
+.pending-grid,
+.stay-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 12px;
@@ -581,8 +919,74 @@ main {
 
 .airport-card,
 .climate-card,
-.pending-card {
+.pending-card,
+.stay-card {
   padding: 16px;
+}
+
+.stay-grid {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.stay-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.stay-photo {
+  display: block;
+  width: calc(100% + 32px);
+  height: clamp(180px, 21vw, 250px);
+  margin: -16px -16px 2px;
+  object-fit: cover;
+  background: var(--surface-strong);
+}
+
+.stay-card h3 {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.4vw, 1.65rem);
+  line-height: 1.2;
+}
+
+.stay-card .stay-type {
+  display: inline-flex;
+  width: max-content;
+  min-height: 30px;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--teal-soft);
+  color: #0f5f59;
+  font-size: 0.9rem;
+  font-weight: 900;
+  padding: 4px 10px;
+}
+
+.stay-detail-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.stay-detail-list div {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 10px;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.stay-detail-list dt {
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.stay-detail-list dd {
+  margin: 0;
 }
 
 .airport-card h3,
@@ -882,9 +1286,15 @@ main {
 
   .metric-row,
   .clock-grid,
+  .stage-clock-grid,
   .entry-form,
   .itinerary-card {
     grid-template-columns: 1fr;
+  }
+
+  .stage-next {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .section-heading {

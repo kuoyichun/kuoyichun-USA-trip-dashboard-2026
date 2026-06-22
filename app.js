@@ -41,7 +41,7 @@
       weekday: "short",
       hour: "2-digit",
       minute: "2-digit",
-      hour12: false
+      hourCycle: "h23"
     };
     return new Intl.DateTimeFormat("zh-TW", { ...defaults, ...options }).format(new Date(iso));
   }
@@ -58,19 +58,43 @@
   }
 
   function formatClock(timeZone, sourceDate = new Date()) {
-    const time = new Intl.DateTimeFormat("zh-TW", {
+    const formatter = new Intl.DateTimeFormat("zh-TW", {
       timeZone,
       hour: "2-digit",
       minute: "2-digit",
-      hour12: false
-    }).format(sourceDate);
+      hourCycle: "h23"
+    });
+    const parts = formatter.formatToParts(sourceDate);
+    const hour = Number(parts.find((part) => part.type === "hour")?.value ?? 0);
+    const minute = parts.find((part) => part.type === "minute")?.value ?? "00";
+    const safeHour = hour === 24 ? 0 : hour;
+    const time = `${String(safeHour).padStart(2, "0")}:${minute}`;
     const day = new Intl.DateTimeFormat("zh-TW", {
       timeZone,
       month: "numeric",
       day: "numeric",
       weekday: "short"
     }).format(sourceDate);
-    return { time, date: day };
+    const period = dayPeriod(safeHour);
+    return { time, period, displayTime: `${period} ${time}`, date: day };
+  }
+
+  function dayPeriod(hour) {
+    if (hour < 5) return "凌晨";
+    if (hour < 11) return "早上";
+    if (hour < 13) return "中午";
+    if (hour < 18) return "下午";
+    if (hour < 23) return "晚上";
+    return "深夜";
+  }
+
+  function formatDateTimeWithPeriod(iso, timeZone) {
+    const date = new Date(iso);
+    const clock = formatClock(timeZone, date);
+    return {
+      ...clock,
+      full: `${clock.date} ${clock.displayTime}`
+    };
   }
 
   function formatDateLabel(dateValue) {
@@ -89,6 +113,10 @@
 
   function mapDirectionsUrl(query) {
     return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
+  }
+
+  function mapRouteDirectionsUrl(origin, destination) {
+    return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`;
   }
 
   function safeMapUrl(value, cityCode, title) {
@@ -143,27 +171,22 @@
     return googleMapEmbedUrl({ q: query, z: String(zoom) });
   }
 
-  function googleMapRouteEmbedUrl() {
-    const routePoints = data.route.map((code) => airports[code].mapQuery);
+  function googleMapDirectionsEmbedUrl(origin, destination) {
+    return googleMapEmbedUrl({
+      f: "d",
+      saddr: origin,
+      daddr: destination
+    });
+  }
+
+  function googleMapRouteEmbedUrl(points = data.route.map((code) => airports[code].mapQuery)) {
+    const routePoints = points;
     const destination = routePoints.slice(1).join(" to: ");
     return googleMapEmbedUrl({
       f: "d",
       saddr: routePoints[0],
       daddr: destination
     });
-  }
-
-  function flightStatusUrl(flight) {
-    const from = airports[flight.from];
-    const date = formatInZone(flight.departIso, from.timezone, {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      weekday: undefined,
-      hour: undefined,
-      minute: undefined
-    });
-    return `https://www.google.com/search?q=${encodeURIComponent(`${flight.id} flight status ${date}`)}`;
   }
 
   function typeClass(type) {
@@ -197,15 +220,37 @@
     }, 2200);
   }
 
+  function stageClockInfo(stage) {
+    const byStage = {
+      "flight-tpe-sea": { displayCode: "SEA", highlightCode: "SEA", label: "目的地：西雅圖 SEA 時間", badge: "飛行目的地" },
+      "transfer-sea": { displayCode: "SEA", highlightCode: "SEA", label: "西雅圖 SEA 當地時間", badge: "目前所在地" },
+      "flight-sea-clt": { displayCode: "CLT", highlightCode: "CLT", label: "目的地：夏洛特 CLT 時間", badge: "飛行目的地" },
+      "charlotte-stay": { displayCode: "CLT", highlightCode: "CLT", label: "夏洛特 CLT 當地時間", badge: "目前所在地" },
+      "flight-clt-den": { displayCode: "DEN", highlightCode: "DEN", label: "目的地：丹佛 DEN 時間", badge: "飛行目的地" },
+      "den-to-laramie": { displayCode: "DEN", highlightCode: "DEN", label: "丹佛 / Laramie 當地時間", badge: "目前所在地" },
+      "laramie-airbnb": { displayCode: "DEN", highlightCode: "DEN", label: "Laramie / 丹佛時區當地時間", badge: "目前所在地" },
+      "laramie-to-denver-hotel": { displayCode: "DEN", highlightCode: "DEN", label: "Laramie 到丹佛當地時間", badge: "目前所在地" },
+      "denver-airport-hotel": { displayCode: "DEN", highlightCode: "DEN", label: "丹佛 DEN 當地時間", badge: "目前所在地" },
+      "flight-den-lax": { displayCode: "LAX", highlightCode: "LAX", label: "目的地：洛杉磯 LAX 時間", badge: "飛行目的地" },
+      "transfer-lax": { displayCode: "LAX", highlightCode: "LAX", label: "洛杉磯 LAX 當地時間", badge: "目前所在地" },
+      "flight-lax-tpe": { displayCode: "TPE", highlightCode: "", label: "目的地：台北 / 桃園 TPE 時間", badge: "" }
+    };
+    return byStage[stage?.id] || { displayCode: "TPE", highlightCode: "", label: `${stage?.locationLabel || "台灣"} 當地時間`, badge: "" };
+  }
+
   function renderClocks() {
     const codes = ["TPE", "SEA", "CLT", "DEN", "LAX"];
+    const stage = currentJourneyStage();
+    const clockInfo = stageClockInfo(stage);
     $("#clockGrid").innerHTML = codes.map((code) => {
       const airport = airports[code];
       const clock = formatClock(airport.timezone);
+      const isActive = code === clockInfo.highlightCode && code !== "TPE";
       return `
-        <div class="clock-card">
-          <strong>${escapeHtml(clock.time)}</strong>
-          <span>${escapeHtml(code)} · ${escapeHtml(airport.cityZh)}</span>
+        <div class="clock-card ${isActive ? "is-active" : ""}">
+          ${isActive ? `<span class="clock-focus-label">${escapeHtml(clockInfo.badge)}</span>` : ""}
+          <strong>${escapeHtml(clock.displayTime)}</strong>
+          <span>${escapeHtml(code)} · ${escapeHtml(airport.cityZh)} / ${escapeHtml(airport.airportZh)}</span>
           <span>${escapeHtml(clock.date)}</span>
         </div>
       `;
@@ -214,6 +259,63 @@
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
+  }
+
+  function stageIdSet(stageIdList = []) {
+    return new Set(stageIdList);
+  }
+
+  function activeTimelineTarget(stage) {
+    const stageId = stage?.id;
+    const timeline = data.journeyTimeline || { nodes: [], links: [] };
+    const activeLink = timeline.links.find((link) => stageIdSet(link.activeStages).has(stageId));
+    const activeNode = timeline.nodes.find((node) => stageIdSet(node.activeStages).has(stageId));
+    return { linkId: activeLink?.id || "", nodeId: activeNode?.id || "" };
+  }
+
+  function renderJourneyTimeline(stage) {
+    const timeline = data.journeyTimeline;
+    if (!timeline?.nodes?.length) return;
+    const active = activeTimelineTarget(stage);
+    const nodeById = new Map(timeline.nodes.map((node) => [node.id, node]));
+    const parts = [];
+
+    timeline.nodes.forEach((node, index) => {
+      const isActiveNode = node.id === active.nodeId;
+      parts.push(`
+        <div class="timeline-node ${isActiveNode ? "is-active" : ""}">
+          <span class="timeline-dot" aria-hidden="true"></span>
+          <strong>${escapeHtml(node.label)}</strong>
+          <small>${escapeHtml(node.date)} · ${escapeHtml(node.detail)}</small>
+        </div>
+      `);
+
+      const nextNode = timeline.nodes[index + 1];
+      const link = nextNode ? timeline.links.find((item) => item.from === node.id && item.to === nextNode.id) : null;
+      if (link && nodeById.has(link.to)) {
+        const isActiveLink = link.id === active.linkId;
+        parts.push(`
+          <div class="timeline-link ${isActiveLink ? "is-active" : ""}" style="--link-weight: ${Number(link.weight || 1)}">
+            <span></span>
+            <strong>${escapeHtml(link.label)}</strong>
+            <small>${escapeHtml(link.duration)}</small>
+          </div>
+        `);
+      }
+    });
+
+    $("#journeyTimeline").innerHTML = parts.join("");
+  }
+
+  function renderDurationStrip() {
+    const items = data.durationSummary || [];
+    $("#durationStrip").innerHTML = items.map((item) => `
+      <article>
+        <span>${escapeHtml(item.dates)}</span>
+        <strong>${escapeHtml(item.label)} · ${escapeHtml(item.duration)}</strong>
+        <small>${escapeHtml(item.note)}</small>
+      </article>
+    `).join("");
   }
 
   function currentJourneyStage(now = new Date()) {
@@ -240,22 +342,22 @@
     const now = new Date();
     const stage = currentJourneyStage(now);
     if (!stage) return;
-    const localClock = formatClock(stage.timezone, now);
+    const clockInfo = stageClockInfo(stage);
+    const displayAirport = airports[clockInfo.displayCode];
+    const displayTimeZone = displayAirport?.timezone || stage.timezone;
+    const localClock = formatClock(displayTimeZone, now);
     const taiwanClock = formatClock(HOME_TZ, now);
-    const tripStart = new Date(data.journeyStages[0].startIso);
-    const tripArrival = new Date((data.journeyStages.find((item) => item.id === "arrived-home") || data.journeyStages.at(-1)).startIso);
-    const progress = clamp(((now - tripStart) / (tripArrival - tripStart)) * 100, 0, 100);
 
     $("#currentStageTitle").textContent = stage.title;
     $("#currentStageSubtitle").textContent = stage.subtitle;
-    $("#currentLocalLabel").textContent = `${stage.locationLabel} 當地時間`;
-    $("#currentLocalTime").textContent = localClock.time;
+    $("#currentLocalLabel").textContent = clockInfo.label;
+    $("#currentLocalTime").textContent = localClock.displayTime;
     $("#currentLocalDate").textContent = localClock.date;
-    $("#currentTaiwanTime").textContent = taiwanClock.time;
+    $("#currentTaiwanTime").textContent = taiwanClock.displayTime;
     $("#currentTaiwanDate").textContent = taiwanClock.date;
     $("#currentNextStep").textContent = stage.nextLabel;
-    $("#tripProgressBar").style.width = `${progress.toFixed(0)}%`;
-    $("#tripProgressLabel").textContent = `整趟旅程進度約 ${progress.toFixed(0)}%`;
+    renderJourneyTimeline(stage);
+    renderDurationStrip();
     const stageMap = $("#currentStageMap");
     stageMap.href = mapSearchUrl(stage.mapQuery || stage.locationLabel);
   }
@@ -264,10 +366,10 @@
     $("#flightList").innerHTML = data.flights.map((flight) => {
       const from = airports[flight.from];
       const to = airports[flight.to];
-      const departLocal = formatInZone(flight.departIso, from.timezone);
-      const arriveLocal = formatInZone(flight.arriveIso, to.timezone);
-      const departTw = formatInZone(flight.departIso, HOME_TZ);
-      const arriveTw = formatInZone(flight.arriveIso, HOME_TZ);
+      const departLocal = formatDateTimeWithPeriod(flight.departIso, from.timezone);
+      const arriveLocal = formatDateTimeWithPeriod(flight.arriveIso, to.timezone);
+      const departTw = formatDateTimeWithPeriod(flight.departIso, HOME_TZ);
+      const arriveTw = formatDateTimeWithPeriod(flight.arriveIso, HOME_TZ);
       const detailBits = [flight.aircraft, flight.duration, flight.cabin].filter(Boolean).join(" · ");
       const confirmation = flight.confirmation ? `<span class="tag">確認碼 ${escapeHtml(flight.confirmation)}</span>` : "";
       const seat = flight.seat ? `<span class="tag">座位 ${escapeHtml(flight.seat)}</span>` : "";
@@ -283,29 +385,30 @@
           </div>
           <div class="flight-path">
             <div class="time-block">
-              <strong>${escapeHtml(departLocal.split(" ").at(-1))}</strong>
-              <span class="code">${escapeHtml(flight.from)}</span>
+              <strong>${escapeHtml(departLocal.displayTime)}</strong>
+              <span class="code">${escapeHtml(flight.from)} ${escapeHtml(from.cityZh)}</span>
               <span class="airport-name">${escapeHtml(from.airportZh)}</span>
-              <span class="airport-name">${escapeHtml(departLocal)} ${escapeHtml(zoneAbbr(flight.departIso, from.timezone))}</span>
+              <span class="airport-name">${escapeHtml(from.airportEn)}</span>
+              <span class="airport-name">${escapeHtml(departLocal.full)} ${escapeHtml(zoneAbbr(flight.departIso, from.timezone))}</span>
             </div>
             <div class="flight-arrow" aria-hidden="true">→</div>
             <div class="time-block">
-              <strong>${escapeHtml(arriveLocal.split(" ").at(-1))}</strong>
-              <span class="code">${escapeHtml(flight.to)}</span>
+              <strong>${escapeHtml(arriveLocal.displayTime)}</strong>
+              <span class="code">${escapeHtml(flight.to)} ${escapeHtml(to.cityZh)}</span>
               <span class="airport-name">${escapeHtml(to.airportZh)}</span>
-              <span class="airport-name">${escapeHtml(arriveLocal)} ${escapeHtml(zoneAbbr(flight.arriveIso, to.timezone))}</span>
+              <span class="airport-name">${escapeHtml(to.airportEn)}</span>
+              <span class="airport-name">${escapeHtml(arriveLocal.full)} ${escapeHtml(zoneAbbr(flight.arriveIso, to.timezone))}</span>
             </div>
           </div>
           <div class="taiwan-time">
-            台灣時間：${escapeHtml(departTw)} 出發 · ${escapeHtml(arriveTw)} 抵達
+            台灣時間：${escapeHtml(departTw.full)} 出發 · ${escapeHtml(arriveTw.full)} 抵達
           </div>
           <div class="flight-meta">${escapeHtml(detailBits)}</div>
           <div class="tag-row">${confirmation}${seat}<span class="tag">${escapeHtml(flight.fromDetail)}</span><span class="tag">${escapeHtml(flight.toDetail)}</span></div>
           <p class="card-muted">${escapeHtml(flight.note)}</p>
           <div class="flight-actions">
-            <a class="ghost-button" href="${mapSearchUrl(from.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">⌖</span>${escapeHtml(flight.from)}</a>
-            <a class="ghost-button" href="${mapDirectionsUrl(to.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">↗</span>${escapeHtml(flight.to)}</a>
-            <a class="ghost-button" href="${flightStatusUrl(flight)}" target="_blank" rel="noreferrer"><span aria-hidden="true">◷</span>狀態</a>
+            <a class="ghost-button" href="${mapSearchUrl(from.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">⌖</span>${escapeHtml(from.cityZh)}地圖</a>
+            <a class="ghost-button" href="${mapDirectionsUrl(to.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">↗</span>導航到${escapeHtml(to.cityZh)}</a>
             <button class="icon-button" type="button" data-copy-flight="${escapeHtml(flight.id)}" aria-label="複製 ${escapeHtml(flight.id)} 摘要">⧉</button>
           </div>
         </article>
@@ -313,55 +416,126 @@
     }).join("");
   }
 
+  function distanceKm(a, b) {
+    const radius = 6371;
+    const toRad = (value) => (value * Math.PI) / 180;
+    const dLat = toRad(b.lat - a.lat);
+    const dLon = toRad(b.lon - a.lon);
+    const lat1 = toRad(a.lat);
+    const lat2 = toRad(b.lat);
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+    return 2 * radius * Math.asin(Math.sqrt(h));
+  }
+
+  function distanceLabel(points) {
+    const valid = points.filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lon));
+    if (valid.length < 2) return "";
+    const km = valid.slice(1).reduce((sum, point, index) => sum + distanceKm(valid[index], point), 0);
+    const miles = km * 0.621371;
+    return `直線距離約 ${km.toLocaleString("zh-TW", { maximumFractionDigits: 0 })} km / ${miles.toLocaleString("en-US", { maximumFractionDigits: 0 })} mi`;
+  }
+
+  function normalizePreviewPoints(points) {
+    const valid = points.filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lon));
+    if (!valid.length) return [];
+    const rawLons = valid.map((point) => point.lon);
+    const rawRange = Math.max(...rawLons) - Math.min(...rawLons);
+    const adjusted = valid.map((point) => ({
+      ...point,
+      previewLon: rawRange > 180 && point.lon < 0 ? point.lon + 360 : point.lon
+    }));
+    const lats = adjusted.map((point) => point.lat);
+    const lons = adjusted.map((point) => point.previewLon);
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLon = Math.min(...lons);
+    const maxLon = Math.max(...lons);
+    const latRange = Math.max(maxLat - minLat, 0.01);
+    const lonRange = Math.max(maxLon - minLon, 0.01);
+    const padding = valid.length === 1 ? 0 : 12;
+    const span = 100 - padding * 2;
+    return adjusted.map((point) => ({
+      ...point,
+      x: valid.length === 1 ? 50 : padding + ((point.previewLon - minLon) / lonRange) * span,
+      y: valid.length === 1 ? 50 : padding + ((maxLat - point.lat) / latRange) * span
+    }));
+  }
+
+  function routePreviewHtml(target) {
+    const points = normalizePreviewPoints(target.points || []);
+    if (!points.length) {
+      return `
+        <div class="route-preview route-preview-empty">
+          <strong>${escapeHtml(target.label || "自訂地標")}</strong>
+          <span>下方 Google Maps 顯示目前選取的地點。</span>
+        </div>
+      `;
+    }
+
+    const polyline = points.length > 1
+      ? `<polyline points="${points.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(" ")}"></polyline>`
+      : "";
+    const pins = points.map((point, index) => `
+      <span class="map-pin" style="left: ${point.x.toFixed(2)}%; top: ${point.y.toFixed(2)}%;">
+        <i>${index + 1}</i>
+        <b>${escapeHtml(point.label)}</b>
+      </span>
+    `).join("");
+
+    return `
+      <div class="route-preview">
+        <div class="route-preview-meta">
+          <strong>${escapeHtml(target.label)}</strong>
+          <span>${escapeHtml(distanceLabel(target.points || []) || target.caption || "")}</span>
+        </div>
+        <svg class="route-preview-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${polyline}</svg>
+        ${pins}
+      </div>
+    `;
+  }
+
+  function fullRouteUrl(points) {
+    return `https://www.google.com/maps/dir/${points.map((point) => encodeURIComponent(point.query)).join("/")}`;
+  }
+
   function mapTargets() {
-    return [
-      {
-        id: "route",
-        label: "整趟路線",
-        caption: "Google Maps 互動路線，可放大縮小；跨海航段若無法計算，請切換單一機場地標查看。",
-        src: googleMapRouteEmbedUrl()
-      },
-      ...Object.values(airports).map((airport) => ({
-        id: airport.code,
-        label: `${airport.code} ${airport.cityZh}`,
-        caption: `${airport.airportZh} / ${airport.airportEn}`,
-        src: googleMapPlaceEmbedUrl(airport.mapQuery, 12)
-      })),
-      ...(data.stays || []).map((stay) => ({
-        id: stay.id,
-        label: stay.shortLabel || stay.title,
-        caption: `${stay.title}：${stay.address}`,
-        src: googleMapPlaceEmbedUrl(stay.mapQuery, 14)
-      })),
-      ...(data.rentals || []).map((rental) => ({
-        id: rental.id,
-        label: rental.shortLabel || rental.title,
-        caption: `${rental.title}：${rental.address}`,
-        src: googleMapPlaceEmbedUrl(rental.mapQuery, 14)
-      })),
-      ...(data.keyPlaces || []).map((place) => ({
-        id: place.id,
-        label: place.label,
-        caption: `${place.title}：${place.note}`,
-        src: googleMapPlaceEmbedUrl(place.mapQuery, 14)
-      }))
-    ];
+    return (data.mapSegments || []).map((segment) => {
+      const points = segment.points || [];
+      const queries = points.map((point) => point.query).filter(Boolean);
+      const hasRoute = queries.length > 1;
+      return {
+        ...segment,
+        caption: segment.caption || "目前選取的路線段。",
+        src: hasRoute ? googleMapRouteEmbedUrl(queries) : googleMapPlaceEmbedUrl(queries[0] || segment.label, 13),
+        actionUrl: hasRoute ? fullRouteUrl(points) : mapSearchUrl(queries[0] || segment.label),
+        actionLabel: segment.actionLabel || (hasRoute ? "開 Google Maps 導航" : "開 Google Maps")
+      };
+    });
+  }
+
+  function renderMapTarget(target) {
+    $("#routeMap").innerHTML = `
+      ${routePreviewHtml(target)}
+      <iframe id="googleMapFrame" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src="${escapeHtml(target.src)}" title="Google Maps - ${escapeHtml(target.label)}"></iframe>
+      <div class="map-frame-caption">
+        <span id="mapCaptionText">${escapeHtml(target.caption)}</span>
+        <a class="text-button" href="${escapeHtml(target.actionUrl)}" target="_blank" rel="noreferrer">${escapeHtml(target.actionLabel)}</a>
+      </div>
+    `;
   }
 
   function setEmbeddedMap(targetIdOrQuery, label = "", zoom = 13) {
     const targets = mapTargets();
     const target = targets.find((item) => item.id === targetIdOrQuery) || {
       id: "",
-      label,
+      label: label || targetIdOrQuery,
       caption: label ? `目前顯示：${label}` : "目前顯示自訂地標",
-      src: googleMapPlaceEmbedUrl(targetIdOrQuery, zoom)
+      points: [],
+      src: googleMapPlaceEmbedUrl(targetIdOrQuery, zoom),
+      actionUrl: mapSearchUrl(targetIdOrQuery),
+      actionLabel: "開 Google Maps"
     };
-    const iframe = $("#googleMapFrame");
-    const caption = $("#mapCaptionText");
-    if (!iframe || !caption) return;
-    iframe.src = target.src;
-    iframe.title = `Google Maps - ${target.label}`;
-    caption.textContent = target.caption;
+    renderMapTarget(target);
     document.querySelectorAll("[data-map-target]").forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.mapTarget === target.id));
     });
@@ -372,13 +546,7 @@
     $("#mapToolbar").innerHTML = targets.map((target, index) => `
       <button type="button" data-map-target="${escapeHtml(target.id)}" aria-pressed="${index === 0 ? "true" : "false"}">${escapeHtml(target.label)}</button>
     `).join("");
-    $("#routeMap").innerHTML = `
-      <iframe id="googleMapFrame" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src="${targets[0].src}" title="Google Maps - ${escapeHtml(targets[0].label)}"></iframe>
-      <div class="map-frame-caption">
-        <span id="mapCaptionText">${escapeHtml(targets[0].caption)}</span>
-        <a class="text-button" href="https://www.google.com/maps/dir/Taiwan+Taoyuan+International+Airport/Seattle-Tacoma+International+Airport/Charlotte+Douglas+International+Airport/Denver+International+Airport/Los+Angeles+International+Airport/Taiwan+Taoyuan+International+Airport" target="_blank" rel="noreferrer">開啟完整地圖</a>
-      </div>
-    `;
+    if (targets[0]) renderMapTarget(targets[0]);
   }
 
   function renderAirports() {
@@ -424,9 +592,11 @@
     const stays = data.stays || [];
     const stayCards = stays.map((stay) => `
       <article class="stay-card">
+        ${stay.image ? `<img class="stay-photo" src="${escapeHtml(stay.image)}" alt="${escapeHtml(stay.title)} 外觀或住宿照片" loading="lazy">` : ""}
         <span class="stay-type">${escapeHtml(stay.type)} · ${escapeHtml(stay.dateRange)}</span>
         <h3>${escapeHtml(stay.title)}</h3>
         <dl class="stay-detail-list">
+          <div><dt>停留</dt><dd>${escapeHtml(stay.durationLabel || stay.dateRange)}</dd></div>
           <div><dt>入住</dt><dd>${escapeHtml(stay.checkIn)}</dd></div>
           <div><dt>退房</dt><dd>${escapeHtml(stay.checkOut)}</dd></div>
           <div><dt>地址</dt><dd>${escapeHtml(stay.address)}</dd></div>
@@ -523,7 +693,7 @@
           <p class="card-muted">${escapeHtml(slot.detail)}</p>
           <div class="tag-row">
             <span class="tag ${typeClass(slot.type)}">${escapeHtml(slot.type)}</span>
-            <span class="tag">${escapeHtml(slot.city)}</span>
+            <span class="tag">${escapeHtml(`${airport.cityZh} ${slot.city}`)}</span>
           </div>
           <div class="card-actions">
             <button class="ghost-button" type="button" data-prefill-slot="${escapeHtml(slot.id)}"><span aria-hidden="true">＋</span>套入表單</button>
@@ -641,11 +811,15 @@
     if (!flight) return;
     const from = airports[flight.from];
     const to = airports[flight.to];
+    const departLocal = formatDateTimeWithPeriod(flight.departIso, from.timezone);
+    const arriveLocal = formatDateTimeWithPeriod(flight.arriveIso, to.timezone);
+    const departTw = formatDateTimeWithPeriod(flight.departIso, HOME_TZ);
+    const arriveTw = formatDateTimeWithPeriod(flight.arriveIso, HOME_TZ);
     const summary = [
       `${flight.id} ${flight.from}-${flight.to}`,
-      `${from.airportZh} ${formatInZone(flight.departIso, from.timezone)} ${zoneAbbr(flight.departIso, from.timezone)}`,
-      `${to.airportZh} ${formatInZone(flight.arriveIso, to.timezone)} ${zoneAbbr(flight.arriveIso, to.timezone)}`,
-      `台灣時間：${formatInZone(flight.departIso, HOME_TZ)} 出發 / ${formatInZone(flight.arriveIso, HOME_TZ)} 抵達`,
+      `${from.cityZh} ${from.airportZh} ${departLocal.full} ${zoneAbbr(flight.departIso, from.timezone)}`,
+      `${to.cityZh} ${to.airportZh} ${arriveLocal.full} ${zoneAbbr(flight.arriveIso, to.timezone)}`,
+      `台灣時間：${departTw.full} 出發 / ${arriveTw.full} 抵達`,
       flight.confirmation ? `確認碼：${flight.confirmation}` : "",
       flight.seat ? `座位：${flight.seat}` : ""
     ].filter(Boolean).join("\n");
@@ -672,9 +846,11 @@
       const from = airports[flight.from];
       const to = airports[flight.to];
       const uid = `${flight.id}-${flight.departIso}@codex-trip`;
+      const departTw = formatDateTimeWithPeriod(flight.departIso, HOME_TZ);
+      const arriveTw = formatDateTimeWithPeriod(flight.arriveIso, HOME_TZ);
       const description = [
         flight.note,
-        `台灣時間：${formatInZone(flight.departIso, HOME_TZ)} 出發 / ${formatInZone(flight.arriveIso, HOME_TZ)} 抵達`,
+        `台灣時間：${departTw.full} 出發 / ${arriveTw.full} 抵達`,
         flight.confirmation ? `確認碼：${flight.confirmation}` : "",
         flight.seat ? `座位：${flight.seat}` : ""
       ].filter(Boolean).join("\\n");
