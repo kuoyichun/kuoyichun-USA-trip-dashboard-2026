@@ -717,21 +717,21 @@
     $("#stayGrid").innerHTML = [...stayCards, ...rentalCards, ...placeCards].join("");
   }
 
-  function transitMapEmbedUrl(area) {
-    if (area.mapType === "directions" && area.mapOrigin && area.mapDestination) {
-      return googleMapDirectionsEmbedUrl(area.mapOrigin, area.mapDestination);
-    }
-    return googleMapPlaceEmbedUrl(area.mapQuery || area.title, area.mapZoom || 13);
+  function transitDefaultPoint(area) {
+    const fallback = area.systems?.[0]?.stations?.[0] || area.bikeStations?.[0] || {};
+    return {
+      name: area.title,
+      query: area.mapQuery || fallback.query || area.title,
+      detail: "完整路線系統圖"
+    };
   }
 
-  function transitModeLabel(mode) {
-    const labels = {
-      transit: "大眾運輸",
-      walking: "步行",
-      bicycling: "單車",
-      directions: "導航"
-    };
-    return labels[mode] || "導航";
+  function transitSelectionMarkup(point, kindLabel = "站點") {
+    return `
+      <span>${escapeHtml(kindLabel)}</span>
+      <strong>${escapeHtml(point.name || point.label)}</strong>
+      ${point.detail ? `<small>${escapeHtml(point.detail)}</small>` : ""}
+    `;
   }
 
   function renderTransit() {
@@ -739,52 +739,101 @@
     if (!target) return;
     const areas = data.transitAreas || [];
     target.innerHTML = areas.map((area) => {
-      const stops = (area.stops || []).map((stop) => `
-        <li>
-          <span>${escapeHtml(stop.label)}</span>
-          <strong>${escapeHtml(stop.detail)}</strong>
-        </li>
+      const defaultPoint = transitDefaultPoint(area);
+      const systems = (area.systems || []).map((system) => `
+        <section class="transit-system" style="--line-color: ${escapeHtml(system.color || "#2563eb")}">
+          <div class="transit-system-head">
+            <div>
+              <h4>${escapeHtml(system.name)}</h4>
+              <p>${escapeHtml(system.type)} · ${escapeHtml(system.description || "")}</p>
+            </div>
+          </div>
+          <ol class="station-track">
+            ${(system.stations || []).map((station, index) => `
+              <li>
+                <button class="station-button ${station.query === defaultPoint.query ? "is-selected" : ""}" type="button"
+                  data-transit-area="${escapeHtml(area.id)}"
+                  data-transit-kind="station"
+                  data-transit-kind-label="${escapeHtml(system.name)}"
+                  data-transit-query="${escapeHtml(station.query)}"
+                  data-transit-name="${escapeHtml(station.name)}"
+                  data-transit-detail="${escapeHtml(system.type)}">
+                  <i aria-hidden="true">${index + 1}</i>
+                  <span>${escapeHtml(station.label)}</span>
+                </button>
+              </li>
+            `).join("")}
+          </ol>
+        </section>
       `).join("");
-      const checks = (area.checks || []).map((check) => {
-        const mode = check.mode || "directions";
-        return `
-          <a class="ghost-button" href="${mapModeDirectionsUrl(check.origin, check.destination, mode)}" target="_blank" rel="noreferrer">
-            <span aria-hidden="true">↗</span>${escapeHtml(check.label)}
-          </a>
-        `;
-      }).join("");
-      const official = area.officialUrl ? `
-        <a class="ghost-button" href="${escapeHtml(area.officialUrl)}" target="_blank" rel="noreferrer">
-          <span aria-hidden="true">↗</span>${escapeHtml(area.officialLabel || "官方路線")}
+      const bikeStations = (area.bikeStations || []).map((point) => `
+        <button class="bike-pin" type="button"
+          data-transit-area="${escapeHtml(area.id)}"
+          data-transit-kind="bike"
+          data-transit-kind-label="單車 / 微移動"
+          data-transit-query="${escapeHtml(point.query)}"
+          data-transit-name="${escapeHtml(point.name)}"
+          data-transit-detail="${escapeHtml(point.detail)}">
+          <span aria-hidden="true">⌖</span>
+          <strong>${escapeHtml(point.label)}</strong>
+          <small>${escapeHtml(point.detail)}</small>
+        </button>
+      `).join("");
+      const official = (area.officialLinks || []).map((link) => `
+        <a class="ghost-button" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">
+          <span aria-hidden="true">↗</span>${escapeHtml(link.label)}
         </a>
-      ` : "";
-      const bike = area.bikeQuery ? `
-        <a class="ghost-button" href="${mapSearchUrl(area.bikeQuery)}" target="_blank" rel="noreferrer">
-          <span aria-hidden="true">⌖</span>${escapeHtml(area.bikeLabel || "共享單車")}
-        </a>
-      ` : "";
-      const mapLabel = area.mapDestination || area.mapQuery || area.title;
+      `).join("");
       return `
         <article class="transit-card">
           <div class="transit-copy">
-            <span class="stay-type">${escapeHtml(area.cityLabel)} · ${escapeHtml(area.system)}</span>
+            <span class="stay-type">${escapeHtml(area.cityLabel)} · Transit map</span>
             <h3>${escapeHtml(area.title)}</h3>
             <p class="card-muted">${escapeHtml(area.summary)}</p>
-            <ul class="transit-stop-list">${stops}</ul>
-            <div class="transit-checks">${checks}</div>
+            <div class="transit-systems">${systems}</div>
+            <div class="bike-section">
+              <h4>單車租借點 / 微移動查詢</h4>
+              <div class="bike-pin-grid">${bikeStations}</div>
+            </div>
             <div class="card-actions">
-              <button class="ghost-button" type="button" data-focus-map-query="${escapeHtml(mapLabel)}" data-focus-map-label="${escapeHtml(area.title)}"><span aria-hidden="true">⌖</span>主地圖</button>
+              <button class="ghost-button" type="button" data-focus-map-query="${escapeHtml(area.mapQuery || defaultPoint.query)}" data-focus-map-label="${escapeHtml(area.title)}"><span aria-hidden="true">⌖</span>主地圖</button>
               ${official}
-              ${bike}
             </div>
           </div>
           <div class="transit-map-card">
-            <iframe loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src="${escapeHtml(transitMapEmbedUrl(area))}" title="Google Maps - ${escapeHtml(area.title)}"></iframe>
-            <div class="transit-map-caption">${escapeHtml(area.cityLabel)}：${escapeHtml(area.system)} · ${escapeHtml(transitModeLabel(area.checks?.[0]?.mode))}</div>
+            <iframe data-transit-frame="${escapeHtml(area.id)}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src="${escapeHtml(googleMapPlaceEmbedUrl(area.mapQuery || defaultPoint.query, area.mapZoom || 12))}" title="Google Maps - ${escapeHtml(area.title)}"></iframe>
+            <div class="transit-map-caption">
+              <div class="transit-selected" data-transit-selected="${escapeHtml(area.id)}">
+                ${transitSelectionMarkup(defaultPoint, "預設地圖")}
+              </div>
+              <a class="text-button" data-transit-open="${escapeHtml(area.id)}" href="${mapSearchUrl(area.mapQuery || defaultPoint.query)}" target="_blank" rel="noreferrer">開 Google Maps</a>
+            </div>
           </div>
         </article>
       `;
     }).join("");
+  }
+
+  function setTransitCardMap(button) {
+    const areaId = button.dataset.transitArea;
+    const query = button.dataset.transitQuery;
+    const frame = document.querySelector(`[data-transit-frame="${areaId}"]`);
+    if (frame) frame.src = googleMapPlaceEmbedUrl(query, 15);
+
+    const selection = document.querySelector(`[data-transit-selected="${areaId}"]`);
+    if (selection) {
+      selection.innerHTML = transitSelectionMarkup({
+        name: button.dataset.transitName,
+        detail: button.dataset.transitDetail
+      }, button.dataset.transitKindLabel || "站點");
+    }
+
+    const openLink = document.querySelector(`[data-transit-open="${areaId}"]`);
+    if (openLink) openLink.href = mapSearchUrl(query);
+
+    document.querySelectorAll(`[data-transit-area="${areaId}"]`).forEach((item) => {
+      item.classList.toggle("is-selected", item === button);
+    });
   }
 
   function renderCityOptions() {
@@ -1085,6 +1134,11 @@
     });
 
     $("#transitGrid")?.addEventListener("click", (event) => {
+      const transitButton = event.target.closest("[data-transit-query]");
+      if (transitButton) {
+        setTransitCardMap(transitButton);
+        return;
+      }
       const button = event.target.closest("[data-focus-map-query]");
       if (!button) return;
       setEmbeddedMap(button.dataset.focusMapQuery, button.dataset.focusMapLabel, 14);

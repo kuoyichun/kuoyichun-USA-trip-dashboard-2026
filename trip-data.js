@@ -615,126 +615,156 @@ window.TRIP_DATA = {
       id: "transit-charlotte",
       city: "CLT",
       cityLabel: "夏洛特",
-      title: "夏洛特：飯店、UNC Charlotte 與輕軌",
-      system: "CATS LYNX Blue Line",
-      summary: "住宿在 University City，先看 LYNX Blue Line 北段；UNC Charlotte Main、JW Clay / UNC Charlotte、University City Blvd 都是判斷景點交通方便度的關鍵站。",
-      mapType: "directions",
-      mapOrigin: "Hyatt Place Charlotte/University Research Park 640 University Center Blvd Charlotte NC",
-      mapDestination: "UNC Charlotte Main Station Charlotte NC",
-      mapZoom: 13,
-      officialLabel: "CATS 輕軌路線",
-      officialUrl: "https://www.charlottenc.gov/CATS/Ride/Rail/Rail-Routes-and-Schedules",
-      bikeLabel: "共享單車 / 微移動站點",
-      bikeQuery: "bike share near UNC Charlotte Main Station Charlotte NC",
-      stops: [
-        { label: "飯店", detail: "Hyatt Place Charlotte / University Research Park" },
-        { label: "學校", detail: "UNC Charlotte" },
-        { label: "輕軌", detail: "UNC Charlotte Main、JW Clay、University City Blvd" },
-        { label: "市區", detail: "Blue Line 可接 Uptown；Gold Line 在市中心東西向移動" }
+      title: "夏洛特：CATS 輕軌與電車系統",
+      summary: "用 Blue Line 判斷南北向景點，用 Gold Line 判斷 Uptown 東西向景點。點任何站名會顯示英文全名，並把右側 Google Maps 切到該站。",
+      mapQuery: "CATS LYNX Blue Line Charlotte NC",
+      mapZoom: 11,
+      officialLinks: [
+        { label: "CATS Rail", url: "https://www.charlottenc.gov/CATS/Ride/Rail/Rail-Routes-and-Schedules" },
+        { label: "Gold Line", url: "https://www.charlottenc.gov/CATS/Ride/Rail/Gold-Line-Streetcar" }
       ],
-      checks: [
+      systems: [
         {
-          label: "飯店→UNC Charlotte",
-          origin: "Hyatt Place Charlotte/University Research Park 640 University Center Blvd Charlotte NC",
-          destination: "University of North Carolina at Charlotte",
-          mode: "transit"
+          id: "clt-blue",
+          name: "LYNX Blue Line",
+          type: "Light Rail",
+          color: "#2563eb",
+          description: "南北向主線：I-485 / South Boulevard 到 UNC Charlotte Main。",
+          stations: [
+            { label: "I-485", name: "I-485 / South Boulevard Station", query: "I-485 South Boulevard Station Charlotte NC" },
+            { label: "Sharon Rd W", name: "Sharon Road West Station", query: "Sharon Road West Station Charlotte NC" },
+            { label: "Arrowood", name: "Arrowood Station", query: "Arrowood Station Charlotte NC" },
+            { label: "Archdale", name: "Archdale Station", query: "Archdale Station Charlotte NC" },
+            { label: "Tyvola", name: "Tyvola Station", query: "Tyvola Station Charlotte NC" },
+            { label: "Woodlawn", name: "Woodlawn Station", query: "Woodlawn Station Charlotte NC" },
+            { label: "Scaleybark", name: "Scaleybark Station", query: "Scaleybark Station Charlotte NC" },
+            { label: "New Bern", name: "New Bern Station", query: "New Bern Station Charlotte NC" },
+            { label: "East/West", name: "East / West Boulevard Station", query: "East West Boulevard Station Charlotte NC" },
+            { label: "Bland St", name: "Bland Street Station", query: "Bland Street Station Charlotte NC" },
+            { label: "Carson", name: "Carson Station", query: "Carson Station Charlotte NC" },
+            { label: "Brooklyn Village", name: "Brooklyn Village Station", query: "Brooklyn Village Station Charlotte NC" },
+            { label: "3rd St", name: "3rd Street / Convention Center Station", query: "3rd Street Convention Center Station Charlotte NC" },
+            { label: "CTC/Arena", name: "Charlotte Transportation Center / Arena Station", query: "CTC Arena Station Charlotte NC" },
+            { label: "7th St", name: "7th Street Station", query: "7th Street Station Charlotte NC" },
+            { label: "9th St", name: "9th Street Station", query: "9th Street Station Charlotte NC" },
+            { label: "Parkwood", name: "Parkwood Station", query: "Parkwood Station Charlotte NC" },
+            { label: "25th St", name: "25th Street Station", query: "25th Street Station Charlotte NC" },
+            { label: "36th St", name: "36th Street Station", query: "36th Street Station Charlotte NC" },
+            { label: "Sugar Creek", name: "Sugar Creek Station", query: "Sugar Creek Station Charlotte NC" },
+            { label: "Old Concord Rd", name: "Old Concord Road Station", query: "Old Concord Road Station Charlotte NC" },
+            { label: "Tom Hunter", name: "Tom Hunter Station", query: "Tom Hunter Station Charlotte NC" },
+            { label: "University City Blvd", name: "University City Boulevard Station", query: "University City Boulevard Station Charlotte NC" },
+            { label: "McCullough", name: "McCullough Station", query: "McCullough Station Charlotte NC" },
+            { label: "JW Clay", name: "JW Clay Boulevard / UNC Charlotte Station", query: "JW Clay Boulevard UNC Charlotte Station Charlotte NC" },
+            { label: "UNC Main", name: "UNC Charlotte Main Station", query: "UNC Charlotte Main Station Charlotte NC" }
+          ]
         },
         {
-          label: "飯店→JW Clay 站",
-          origin: "Hyatt Place Charlotte/University Research Park 640 University Center Blvd Charlotte NC",
-          destination: "JW Clay Blvd/UNC Charlotte Station Charlotte NC",
-          mode: "transit"
-        },
-        {
-          label: "飯店→Blue Line 北段",
-          origin: "Hyatt Place Charlotte/University Research Park 640 University Center Blvd Charlotte NC",
-          destination: "UNC Charlotte Main Station Charlotte NC",
-          mode: "walking"
+          id: "clt-gold",
+          name: "CityLYNX Gold Line",
+          type: "Streetcar",
+          color: "#b45309",
+          description: "Uptown 東西向電車：French Street 到 Sunnyside Avenue，CTC/Arena 可接 Blue Line。",
+          stations: [
+            { label: "French St", name: "French Street Stop", query: "French Street CityLYNX Gold Line Charlotte NC" },
+            { label: "JCSU", name: "Johnson C. Smith University Stop", query: "Johnson C Smith University Gold Line Charlotte NC" },
+            { label: "Bruns Ave", name: "Bruns Avenue Stop", query: "Bruns Avenue Gold Line Charlotte NC" },
+            { label: "Wesley Heights", name: "Wesley Heights Stop", query: "Wesley Heights Gold Line Charlotte NC" },
+            { label: "Irwin Ave", name: "Irwin Avenue Stop", query: "Irwin Avenue Gold Line Charlotte NC" },
+            { label: "Johnson & Wales", name: "Johnson & Wales University Stop", query: "Johnson and Wales University Gold Line Charlotte NC" },
+            { label: "Gateway", name: "Charlotte Gateway Station Stop", query: "Charlotte Gateway Station Gold Line Charlotte NC" },
+            { label: "Mint St", name: "Mint Street Stop", query: "Mint Street Gold Line Charlotte NC" },
+            { label: "Tryon St", name: "Tryon Street Stop", query: "Tryon Street Gold Line Charlotte NC" },
+            { label: "CTC/Arena", name: "CTC / Arena Stop", query: "CTC Arena Gold Line Charlotte NC" },
+            { label: "Davidson St", name: "Davidson Street Stop", query: "Davidson Street Gold Line Charlotte NC" },
+            { label: "McDowell St", name: "McDowell Street Stop", query: "McDowell Street Gold Line Charlotte NC" },
+            { label: "CPCC", name: "Central Piedmont Community College Stop", query: "CPCC Gold Line Charlotte NC" },
+            { label: "Elizabeth & Hawthorne", name: "Elizabeth & Hawthorne Stop", query: "Elizabeth Hawthorne Gold Line Charlotte NC" },
+            { label: "Hawthorne & 5th", name: "Hawthorne & 5th Street Stop", query: "Hawthorne 5th Street Gold Line Charlotte NC" },
+            { label: "8th St", name: "8th Street Stop", query: "8th Street Gold Line Charlotte NC" },
+            { label: "Sunnyside", name: "Sunnyside Avenue Stop", query: "Sunnyside Avenue Gold Line Charlotte NC" }
+          ]
         }
+      ],
+      bikeStations: [
+        { label: "Uptown / CTC", name: "Bike share near Charlotte Transportation Center", query: "bike share near Charlotte Transportation Center Charlotte NC", detail: "市中心與 Blue/Gold 轉乘點附近。" },
+        { label: "South End Rail Trail", name: "Bike share near Charlotte Rail Trail South End", query: "bike share near Charlotte Rail Trail South End Charlotte NC", detail: "Blue Line 沿線餐廳與酒吧密集區。" },
+        { label: "7th Street", name: "Bike share near 7th Street Station", query: "bike share near 7th Street Station Charlotte NC", detail: "Discovery Place、7th Street Public Market 周邊。" },
+        { label: "UNC Charlotte", name: "Bike rental near UNC Charlotte", query: "bike rental near UNC Charlotte Charlotte NC", detail: "學校與 University City 周邊單車租借查詢。" }
       ]
     },
     {
       id: "transit-laramie",
       city: "DEN",
       cityLabel: "Laramie",
-      title: "Laramie：Airbnb、懷俄明大學與校園公車",
-      system: "UW Roundup Transit",
-      summary: "Laramie 沒有輕軌，主要看 University of Wyoming 的 Roundup campus bus、步行距離與是否需要開車。Airbnb 離校園近，新增景點時優先看是否在大學周邊或市中心。",
-      mapType: "directions",
-      mapOrigin: "766 North 12th Street Laramie WY 82072",
-      mapDestination: "University of Wyoming",
+      title: "Laramie：UW Roundup 公車與校園核心點",
+      summary: "Laramie 沒有輕軌或電車。這裡改顯示 UW Roundup 公車系統與校園核心點；點地點可看英文全名與 Google Maps 位置。",
+      mapQuery: "University of Wyoming Transit Services Laramie WY",
       mapZoom: 14,
-      officialLabel: "UW Transit",
-      officialUrl: "https://www.uwyo.edu/tps/transit/index.html",
-      bikeLabel: "Laramie 單車租借 / 車店",
-      bikeQuery: "bike rental near University of Wyoming Laramie WY",
-      stops: [
-        { label: "住宿", detail: "766 Hyacinth House / 766 N 12th St" },
-        { label: "學校", detail: "University of Wyoming" },
-        { label: "公車", detail: "UW Roundup：校園與周邊固定路線" },
-        { label: "判斷", detail: "若 Google Maps 顯示轉乘少，通常步行或開車更實際" }
+      officialLinks: [
+        { label: "UW Transit", url: "https://www.uwyo.edu/tps/transit/index.html" }
       ],
-      checks: [
+      systems: [
         {
-          label: "Airbnb→懷俄明大學",
-          origin: "766 North 12th Street Laramie WY 82072",
-          destination: "University of Wyoming",
-          mode: "walking"
-        },
-        {
-          label: "Airbnb→校園公車",
-          origin: "766 North 12th Street Laramie WY 82072",
-          destination: "University of Wyoming Transit Services Laramie WY",
-          mode: "transit"
-        },
-        {
-          label: "Airbnb→市中心",
-          origin: "766 North 12th Street Laramie WY 82072",
-          destination: "Downtown Laramie WY",
-          mode: "directions"
+          id: "laramie-roundup",
+          name: "UW Roundup Transit",
+          type: "Campus Bus",
+          color: "#6d28d9",
+          description: "官方系統含 Express、Link、Evening 等路線；實際停靠與班距以 UW Transit 即時資訊為準。",
+          stations: [
+            { label: "Airbnb", name: "766 North 12th Street", query: "766 North 12th Street Laramie WY 82072" },
+            { label: "UW Campus", name: "University of Wyoming", query: "University of Wyoming Laramie WY" },
+            { label: "Wyoming Union", name: "Wyoming Union", query: "Wyoming Union Laramie WY" },
+            { label: "Coe Library", name: "William Robertson Coe Library", query: "William Robertson Coe Library Laramie WY" },
+            { label: "Engineering", name: "Engineering Education and Research Building", query: "Engineering Education and Research Building University of Wyoming" },
+            { label: "Half Acre", name: "Half Acre Recreation and Wellness Center", query: "Half Acre Recreation and Wellness Center Laramie WY" },
+            { label: "Stadium", name: "War Memorial Stadium", query: "War Memorial Stadium Laramie WY" },
+            { label: "Downtown", name: "Downtown Laramie", query: "Downtown Laramie WY" }
+          ]
         }
+      ],
+      bikeStations: [
+        { label: "UW Outdoor Program", name: "University of Wyoming Outdoor Program", query: "University of Wyoming Outdoor Program Laramie WY", detail: "校內戶外活動與裝備租借入口，是否提供單車需以現場/官網為準。" },
+        { label: "校園周邊", name: "Bike rental near University of Wyoming", query: "bike rental near University of Wyoming Laramie WY", detail: "查詢校園附近可租借或維修單車的地點。" },
+        { label: "市中心周邊", name: "Bike rental near Downtown Laramie", query: "bike rental near Downtown Laramie WY", detail: "查詢 Downtown Laramie 周邊租借點與車店。" }
       ]
     },
     {
       id: "transit-denver-airport",
       city: "DEN",
       cityLabel: "丹佛機場",
-      title: "丹佛機場：Peña Station、A Line 與機場飯店",
-      system: "RTD A Line",
-      summary: "7/3 住 Hyatt Place Peña Station，重點是 61st & Peña 站、丹佛機場站與租車點。RTD A Line 可往返 Denver Airport 與 Union Station。",
-      mapType: "directions",
-      mapOrigin: "Hyatt Place Pena Station Denver Airport 6110 North Panasonic Way Denver CO",
-      mapDestination: "61st and Pena Station Denver CO",
-      mapZoom: 13,
-      officialLabel: "RTD A Line",
-      officialUrl: "https://www.rtd-denver.com/routes-services/rail",
-      bikeLabel: "Veo / 共享單車與滑板車",
-      bikeQuery: "shared bikes scooters near 61st and Pena Station Denver CO",
-      stops: [
-        { label: "飯店", detail: "Hyatt Place Peña Station Denver Airport" },
-        { label: "車站", detail: "61st & Peña Station" },
-        { label: "機場", detail: "Denver Airport Station / DEN" },
-        { label: "市區", detail: "RTD A Line 可到 Denver Union Station" }
+      title: "丹佛：RTD A Line 機場鐵路",
+      summary: "顯示 A Line 全線站點，從 Denver Airport 到 Union Station。點站名可看英文全名與地圖，方便判斷之後加的景點是否靠近鐵路。",
+      mapQuery: "RTD A Line Denver rail map",
+      mapZoom: 10,
+      officialLinks: [
+        { label: "RTD Rail", url: "https://www.rtd-denver.com/routes-services/rail" },
+        { label: "RTD Airport", url: "https://www.rtd-denver.com/routes-services/airport" }
       ],
-      checks: [
+      systems: [
         {
-          label: "飯店→61st & Peña",
-          origin: "Hyatt Place Pena Station Denver Airport 6110 North Panasonic Way Denver CO",
-          destination: "61st and Pena Station Denver CO",
-          mode: "walking"
-        },
-        {
-          label: "飯店→丹佛機場",
-          origin: "Hyatt Place Pena Station Denver Airport 6110 North Panasonic Way Denver CO",
-          destination: "Denver International Airport",
-          mode: "transit"
-        },
-        {
-          label: "飯店→Union Station",
-          origin: "61st and Pena Station Denver CO",
-          destination: "Denver Union Station",
-          mode: "transit"
+          id: "den-a",
+          name: "RTD A Line",
+          type: "Commuter Rail",
+          color: "#2563eb",
+          description: "機場線：Denver Airport Station 到 Union Station。",
+          stations: [
+            { label: "Union", name: "Union Station Transit Center", query: "Union Station Transit Center Denver CO" },
+            { label: "38th / Blake", name: "38th / Blake Station", query: "38th Blake Station Denver CO" },
+            { label: "40th / Colorado", name: "40th / Colorado Station", query: "40th Colorado Station Denver CO" },
+            { label: "Central Park", name: "Central Park Station", query: "Central Park Station Denver CO" },
+            { label: "Peoria", name: "Peoria Station", query: "Peoria Station Denver CO" },
+            { label: "40th & Airport", name: "40th Avenue & Airport Boulevard / Gateway Park Station", query: "40th Avenue Airport Boulevard Gateway Park Station Denver CO" },
+            { label: "61st & Peña", name: "61st / Peña Station", query: "61st and Pena Station Denver CO" },
+            { label: "DEN Airport", name: "Denver Airport Station", query: "Denver Airport Station Denver CO" }
+          ]
         }
+      ],
+      bikeStations: [
+        { label: "61st & Peña", name: "Shared bikes / scooters near 61st & Peña Station", query: "shared bikes scooters near 61st and Pena Station Denver CO", detail: "飯店附近主要查詢點。" },
+        { label: "Union Station", name: "Shared bikes / scooters near Union Station", query: "shared bikes scooters near Union Station Denver CO", detail: "市中心最方便的轉乘點。" },
+        { label: "Central Park", name: "Shared bikes / scooters near Central Park Station", query: "shared bikes scooters near Central Park Station Denver CO", detail: "A Line 中段可作為景點延伸判斷。" },
+        { label: "Denver Airport", name: "Bike racks / shared mobility near Denver Airport Station", query: "bike share near Denver Airport Station Denver CO", detail: "機場站附近以 Google Maps 與 RTD 設施資訊為準。" }
       ]
     }
   ],

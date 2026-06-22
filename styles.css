@@ -989,38 +989,149 @@ main {
   width: fit-content;
 }
 
-.transit-stop-list {
+.transit-systems {
   display: grid;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: 14px;
 }
 
-.transit-stop-list li {
+.transit-system {
   display: grid;
-  grid-template-columns: 62px minmax(0, 1fr);
   gap: 10px;
-  padding: 10px;
+  padding: 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-strong);
 }
 
-.transit-stop-list span {
+.transit-system-head h4,
+.bike-section h4 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.transit-system-head p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.station-track {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.station-track li {
+  position: relative;
+  padding-left: 14px;
+}
+
+.station-track li::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 0;
+  bottom: -7px;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--line-color);
+  opacity: 0.42;
+}
+
+.station-track li:last-child::before {
+  bottom: 50%;
+}
+
+.station-button,
+.bike-pin {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.station-button {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+}
+
+.station-button i {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 3px solid var(--line-color);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.station-button span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 850;
+}
+
+.station-button:hover,
+.station-button:focus-visible,
+.station-button.is-selected,
+.bike-pin:hover,
+.bike-pin:focus-visible,
+.bike-pin.is-selected {
+  border-color: var(--teal);
+  background: var(--teal-soft);
+}
+
+.bike-section {
+  display: grid;
+  gap: 8px;
+}
+
+.bike-pin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 8px;
+}
+
+.bike-pin {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 3px 8px;
+  align-items: start;
+  padding: 10px;
+}
+
+.bike-pin span {
+  grid-row: span 2;
   color: var(--teal);
   font-weight: 900;
 }
 
-.transit-stop-list strong {
+.bike-pin strong,
+.bike-pin small {
   min-width: 0;
-  font-weight: 800;
 }
 
-.transit-checks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.bike-pin strong {
+  font-size: 0.95rem;
+}
+
+.bike-pin small {
+  color: var(--muted);
+  font-size: 0.8rem;
 }
 
 .transit-map-card {
@@ -1039,12 +1150,34 @@ main {
 }
 
 .transit-map-caption {
-  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
   border-top: 1px solid var(--line);
   background: #fff;
   color: var(--muted);
   font-size: 0.88rem;
   font-weight: 800;
+}
+
+.transit-selected {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.transit-selected span,
+.transit-selected small {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.transit-selected strong {
+  color: var(--ink);
+  font-size: 1.04rem;
+  overflow-wrap: anywhere;
 }
 
 .stay-photo {
@@ -1576,6 +1709,15 @@ main {
     min-height: 260px;
   }
 
+  .transit-map-caption {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .bike-pin-grid {
+    grid-template-columns: 1fr;
+  }
+
   .stay-photo {
     height: 205px;
   }
@@ -1638,11 +1780,6 @@ main {
   }
 
   .stay-detail-list div {
-    grid-template-columns: 1fr;
-    gap: 2px;
-  }
-
-  .transit-stop-list li {
     grid-template-columns: 1fr;
     gap: 2px;
   }
