@@ -138,6 +138,15 @@
     return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`;
   }
 
+  function mapModeDirectionsUrl(origin, destination, mode = "") {
+    const url = new URL("https://www.google.com/maps/dir/");
+    url.searchParams.set("api", "1");
+    url.searchParams.set("origin", origin);
+    url.searchParams.set("destination", destination);
+    if (mode && mode !== "directions") url.searchParams.set("travelmode", mode);
+    return url.href;
+  }
+
   function safeMapUrl(value, cityCode, title) {
     const raw = String(value ?? "").trim();
     if (raw) {
@@ -708,6 +717,76 @@
     $("#stayGrid").innerHTML = [...stayCards, ...rentalCards, ...placeCards].join("");
   }
 
+  function transitMapEmbedUrl(area) {
+    if (area.mapType === "directions" && area.mapOrigin && area.mapDestination) {
+      return googleMapDirectionsEmbedUrl(area.mapOrigin, area.mapDestination);
+    }
+    return googleMapPlaceEmbedUrl(area.mapQuery || area.title, area.mapZoom || 13);
+  }
+
+  function transitModeLabel(mode) {
+    const labels = {
+      transit: "大眾運輸",
+      walking: "步行",
+      bicycling: "單車",
+      directions: "導航"
+    };
+    return labels[mode] || "導航";
+  }
+
+  function renderTransit() {
+    const target = $("#transitGrid");
+    if (!target) return;
+    const areas = data.transitAreas || [];
+    target.innerHTML = areas.map((area) => {
+      const stops = (area.stops || []).map((stop) => `
+        <li>
+          <span>${escapeHtml(stop.label)}</span>
+          <strong>${escapeHtml(stop.detail)}</strong>
+        </li>
+      `).join("");
+      const checks = (area.checks || []).map((check) => {
+        const mode = check.mode || "directions";
+        return `
+          <a class="ghost-button" href="${mapModeDirectionsUrl(check.origin, check.destination, mode)}" target="_blank" rel="noreferrer">
+            <span aria-hidden="true">↗</span>${escapeHtml(check.label)}
+          </a>
+        `;
+      }).join("");
+      const official = area.officialUrl ? `
+        <a class="ghost-button" href="${escapeHtml(area.officialUrl)}" target="_blank" rel="noreferrer">
+          <span aria-hidden="true">↗</span>${escapeHtml(area.officialLabel || "官方路線")}
+        </a>
+      ` : "";
+      const bike = area.bikeQuery ? `
+        <a class="ghost-button" href="${mapSearchUrl(area.bikeQuery)}" target="_blank" rel="noreferrer">
+          <span aria-hidden="true">⌖</span>${escapeHtml(area.bikeLabel || "共享單車")}
+        </a>
+      ` : "";
+      const mapLabel = area.mapDestination || area.mapQuery || area.title;
+      return `
+        <article class="transit-card">
+          <div class="transit-copy">
+            <span class="stay-type">${escapeHtml(area.cityLabel)} · ${escapeHtml(area.system)}</span>
+            <h3>${escapeHtml(area.title)}</h3>
+            <p class="card-muted">${escapeHtml(area.summary)}</p>
+            <ul class="transit-stop-list">${stops}</ul>
+            <div class="transit-checks">${checks}</div>
+            <div class="card-actions">
+              <button class="ghost-button" type="button" data-focus-map-query="${escapeHtml(mapLabel)}" data-focus-map-label="${escapeHtml(area.title)}"><span aria-hidden="true">⌖</span>主地圖</button>
+              ${official}
+              ${bike}
+            </div>
+          </div>
+          <div class="transit-map-card">
+            <iframe loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src="${escapeHtml(transitMapEmbedUrl(area))}" title="Google Maps - ${escapeHtml(area.title)}"></iframe>
+            <div class="transit-map-caption">${escapeHtml(area.cityLabel)}：${escapeHtml(area.system)} · ${escapeHtml(transitModeLabel(area.checks?.[0]?.mode))}</div>
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
   function renderCityOptions() {
     const select = $("#citySelect");
     select.innerHTML = Object.values(airports).map((airport) => (
@@ -1005,6 +1084,13 @@
       document.getElementById("map")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
+    $("#transitGrid")?.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-focus-map-query]");
+      if (!button) return;
+      setEmbeddedMap(button.dataset.focusMapQuery, button.dataset.focusMapLabel, 14);
+      document.getElementById("map")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
     $("#checklistBox").addEventListener("change", (event) => {
       const input = event.target.closest("[data-check-id]");
       if (!input) return;
@@ -1053,6 +1139,7 @@
     renderAirports();
     renderClimate();
     renderStays();
+    renderTransit();
     renderCityOptions();
     rerenderPlanner();
     renderPending();

@@ -610,6 +610,134 @@ window.TRIP_DATA = {
       note: "Airbnb / Laramie 停留期間會前往。"
     }
   ],
+  transitAreas: [
+    {
+      id: "transit-charlotte",
+      city: "CLT",
+      cityLabel: "夏洛特",
+      title: "夏洛特：飯店、UNC Charlotte 與輕軌",
+      system: "CATS LYNX Blue Line",
+      summary: "住宿在 University City，先看 LYNX Blue Line 北段；UNC Charlotte Main、JW Clay / UNC Charlotte、University City Blvd 都是判斷景點交通方便度的關鍵站。",
+      mapType: "directions",
+      mapOrigin: "Hyatt Place Charlotte/University Research Park 640 University Center Blvd Charlotte NC",
+      mapDestination: "UNC Charlotte Main Station Charlotte NC",
+      mapZoom: 13,
+      officialLabel: "CATS 輕軌路線",
+      officialUrl: "https://www.charlottenc.gov/CATS/Ride/Rail/Rail-Routes-and-Schedules",
+      bikeLabel: "共享單車 / 微移動站點",
+      bikeQuery: "bike share near UNC Charlotte Main Station Charlotte NC",
+      stops: [
+        { label: "飯店", detail: "Hyatt Place Charlotte / University Research Park" },
+        { label: "學校", detail: "UNC Charlotte" },
+        { label: "輕軌", detail: "UNC Charlotte Main、JW Clay、University City Blvd" },
+        { label: "市區", detail: "Blue Line 可接 Uptown；Gold Line 在市中心東西向移動" }
+      ],
+      checks: [
+        {
+          label: "飯店→UNC Charlotte",
+          origin: "Hyatt Place Charlotte/University Research Park 640 University Center Blvd Charlotte NC",
+          destination: "University of North Carolina at Charlotte",
+          mode: "transit"
+        },
+        {
+          label: "飯店→JW Clay 站",
+          origin: "Hyatt Place Charlotte/University Research Park 640 University Center Blvd Charlotte NC",
+          destination: "JW Clay Blvd/UNC Charlotte Station Charlotte NC",
+          mode: "transit"
+        },
+        {
+          label: "飯店→Blue Line 北段",
+          origin: "Hyatt Place Charlotte/University Research Park 640 University Center Blvd Charlotte NC",
+          destination: "UNC Charlotte Main Station Charlotte NC",
+          mode: "walking"
+        }
+      ]
+    },
+    {
+      id: "transit-laramie",
+      city: "DEN",
+      cityLabel: "Laramie",
+      title: "Laramie：Airbnb、懷俄明大學與校園公車",
+      system: "UW Roundup Transit",
+      summary: "Laramie 沒有輕軌，主要看 University of Wyoming 的 Roundup campus bus、步行距離與是否需要開車。Airbnb 離校園近，新增景點時優先看是否在大學周邊或市中心。",
+      mapType: "directions",
+      mapOrigin: "766 North 12th Street Laramie WY 82072",
+      mapDestination: "University of Wyoming",
+      mapZoom: 14,
+      officialLabel: "UW Transit",
+      officialUrl: "https://www.uwyo.edu/tps/transit/index.html",
+      bikeLabel: "Laramie 單車租借 / 車店",
+      bikeQuery: "bike rental near University of Wyoming Laramie WY",
+      stops: [
+        { label: "住宿", detail: "766 Hyacinth House / 766 N 12th St" },
+        { label: "學校", detail: "University of Wyoming" },
+        { label: "公車", detail: "UW Roundup：校園與周邊固定路線" },
+        { label: "判斷", detail: "若 Google Maps 顯示轉乘少，通常步行或開車更實際" }
+      ],
+      checks: [
+        {
+          label: "Airbnb→懷俄明大學",
+          origin: "766 North 12th Street Laramie WY 82072",
+          destination: "University of Wyoming",
+          mode: "walking"
+        },
+        {
+          label: "Airbnb→校園公車",
+          origin: "766 North 12th Street Laramie WY 82072",
+          destination: "University of Wyoming Transit Services Laramie WY",
+          mode: "transit"
+        },
+        {
+          label: "Airbnb→市中心",
+          origin: "766 North 12th Street Laramie WY 82072",
+          destination: "Downtown Laramie WY",
+          mode: "directions"
+        }
+      ]
+    },
+    {
+      id: "transit-denver-airport",
+      city: "DEN",
+      cityLabel: "丹佛機場",
+      title: "丹佛機場：Peña Station、A Line 與機場飯店",
+      system: "RTD A Line",
+      summary: "7/3 住 Hyatt Place Peña Station，重點是 61st & Peña 站、丹佛機場站與租車點。RTD A Line 可往返 Denver Airport 與 Union Station。",
+      mapType: "directions",
+      mapOrigin: "Hyatt Place Pena Station Denver Airport 6110 North Panasonic Way Denver CO",
+      mapDestination: "61st and Pena Station Denver CO",
+      mapZoom: 13,
+      officialLabel: "RTD A Line",
+      officialUrl: "https://www.rtd-denver.com/routes-services/rail",
+      bikeLabel: "Veo / 共享單車與滑板車",
+      bikeQuery: "shared bikes scooters near 61st and Pena Station Denver CO",
+      stops: [
+        { label: "飯店", detail: "Hyatt Place Peña Station Denver Airport" },
+        { label: "車站", detail: "61st & Peña Station" },
+        { label: "機場", detail: "Denver Airport Station / DEN" },
+        { label: "市區", detail: "RTD A Line 可到 Denver Union Station" }
+      ],
+      checks: [
+        {
+          label: "飯店→61st & Peña",
+          origin: "Hyatt Place Pena Station Denver Airport 6110 North Panasonic Way Denver CO",
+          destination: "61st and Pena Station Denver CO",
+          mode: "walking"
+        },
+        {
+          label: "飯店→丹佛機場",
+          origin: "Hyatt Place Pena Station Denver Airport 6110 North Panasonic Way Denver CO",
+          destination: "Denver International Airport",
+          mode: "transit"
+        },
+        {
+          label: "飯店→Union Station",
+          origin: "61st and Pena Station Denver CO",
+          destination: "Denver Union Station",
+          mode: "transit"
+        }
+      ]
+    }
+  ],
   defaultItems: [
     {
       id: "default-flight-tpe-sea-clt",
@@ -760,7 +888,7 @@ window.TRIP_DATA = {
     {
       id: "airline-apps",
       title: "安裝星宇、AA、United App",
-      note: "開啟航班通知，將確認碼與航班加入。"
+      note: "開啟航班通知。"
     },
     {
       id: "sea-entry",
@@ -780,7 +908,7 @@ window.TRIP_DATA = {
     {
       id: "hotel-screenshots",
       title: "住宿截圖交給網站更新",
-      note: "入住/退房日期、地址、訂房編號都以截圖為準。"
+      note: "入住/退房日期與地址以截圖為準。"
     },
     {
       id: "den-altitude",
