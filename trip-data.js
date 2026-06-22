@@ -10,8 +10,8 @@ window.TRIP_DATA = {
       code: "TPE",
       cityZh: "台北 / 桃園",
       cityEn: "Taipei / Taoyuan",
-      airportZh: "臺灣桃園國際機場",
-      airportEn: "Taiwan Taoyuan International Airport",
+      airportZh: "台灣 TPE",
+      airportEn: "TPE",
       countryZh: "台灣",
       timezone: "Asia/Taipei",
       lat: 25.0797,
@@ -24,8 +24,8 @@ window.TRIP_DATA = {
       code: "SEA",
       cityZh: "西雅圖",
       cityEn: "Seattle",
-      airportZh: "西雅圖-塔科馬國際機場",
-      airportEn: "Seattle-Tacoma International Airport",
+      airportZh: "西雅圖 SEA",
+      airportEn: "SEA",
       countryZh: "美國",
       timezone: "America/Los_Angeles",
       lat: 47.4502,
@@ -38,8 +38,8 @@ window.TRIP_DATA = {
       code: "CLT",
       cityZh: "夏洛特",
       cityEn: "Charlotte",
-      airportZh: "夏洛特道格拉斯國際機場",
-      airportEn: "Charlotte Douglas International Airport",
+      airportZh: "夏洛特 CLT",
+      airportEn: "CLT",
       countryZh: "美國",
       timezone: "America/New_York",
       lat: 35.214,
@@ -52,8 +52,8 @@ window.TRIP_DATA = {
       code: "DEN",
       cityZh: "丹佛",
       cityEn: "Denver",
-      airportZh: "丹佛國際機場",
-      airportEn: "Denver International Airport",
+      airportZh: "丹佛 DEN",
+      airportEn: "DEN",
       countryZh: "美國",
       timezone: "America/Denver",
       lat: 39.8561,
@@ -66,8 +66,8 @@ window.TRIP_DATA = {
       code: "LAX",
       cityZh: "洛杉磯",
       cityEn: "Los Angeles",
-      airportZh: "洛杉磯國際機場",
-      airportEn: "Los Angeles International Airport",
+      airportZh: "洛杉磯 LAX",
+      airportEn: "LAX",
       countryZh: "美國",
       timezone: "America/Los_Angeles",
       lat: 33.9416,
@@ -93,7 +93,7 @@ window.TRIP_DATA = {
       duration: "11 小時 0 分鐘",
       fromDetail: "台北/桃園 TPE 第 2 航廈",
       toDetail: "西雅圖 SEA 航廈待確認",
-      note: "直飛。抵達西雅圖後接美國國內線，需預留入境與安檢時間。"
+      note: "抵達西雅圖後轉國內線。"
     },
     {
       id: "AA2793",
@@ -109,7 +109,7 @@ window.TRIP_DATA = {
       duration: "5 小時 4 分鐘",
       fromDetail: "西雅圖 SEA 航廈待確認",
       toDetail: "夏洛特 CLT Gate 待確認",
-      note: "西雅圖轉機 5 小時 25 分；請確認行李是否需重新托運。"
+      note: "西雅圖轉機 5 小時 25 分。"
     },
     {
       id: "UA1963",
@@ -141,7 +141,7 @@ window.TRIP_DATA = {
       duration: "2 小時 41 分鐘",
       fromDetail: "丹佛 DEN Gate 待確認",
       toDetail: "洛杉磯 LAX 0 航廈",
-      note: "抵達洛杉磯 LAX 後 4 小時 42 分接返台航班。"
+      note: "洛杉磯 LAX 轉機 4 小時 42 分。"
     },
     {
       id: "JX001",
