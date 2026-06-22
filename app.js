@@ -69,14 +69,22 @@
     const minute = parts.find((part) => part.type === "minute")?.value ?? "00";
     const safeHour = hour === 24 ? 0 : hour;
     const time = `${String(safeHour).padStart(2, "0")}:${minute}`;
-    const day = new Intl.DateTimeFormat("zh-TW", {
+    const day = formatCompactDate(sourceDate, timeZone);
+    const period = dayPeriod(safeHour);
+    return { time, period, displayTime: `${period} ${time}`, compactTime: `${period}${time}`, date: day };
+  }
+
+  function formatCompactDate(sourceDate, timeZone) {
+    const parts = new Intl.DateTimeFormat("zh-TW", {
       timeZone,
       month: "numeric",
       day: "numeric",
       weekday: "short"
-    }).format(sourceDate);
-    const period = dayPeriod(safeHour);
-    return { time, period, displayTime: `${period} ${time}`, date: day };
+    }).formatToParts(sourceDate);
+    const month = parts.find((part) => part.type === "month")?.value ?? "";
+    const day = parts.find((part) => part.type === "day")?.value ?? "";
+    const weekday = (parts.find((part) => part.type === "weekday")?.value ?? "").replace("週", "");
+    return `${month}/${day}(${weekday})`;
   }
 
   function dayPeriod(hour) {
@@ -93,7 +101,8 @@
     const clock = formatClock(timeZone, date);
     return {
       ...clock,
-      full: `${clock.date} ${clock.displayTime}`
+      full: `${clock.date} ${clock.displayTime}`,
+      compactFull: `${clock.date} ${clock.compactTime}`
     };
   }
 
@@ -294,13 +303,12 @@
       return `
         <div class="clock-card ${isActive ? "is-active" : ""}">
           <div class="clock-place">
-            <strong>${escapeHtml(clockPlaceLabel(code, airport))}</strong>
-            <span>${escapeHtml(code)} · ${escapeHtml(airport.airportZh)}</span>
+            <strong>${escapeHtml(clockPlaceLabel(code, airport))} ${escapeHtml(code)}</strong>
             <span>${escapeHtml(clock.date)}</span>
             ${isActive ? `<span class="clock-focus-label">${escapeHtml(clockInfo.badge)}</span>` : ""}
           </div>
           <div class="clock-time">
-            <strong>${escapeHtml(clock.displayTime)}</strong>
+            <strong>${escapeHtml(clock.compactTime)}</strong>
           </div>
         </div>
       `;
@@ -420,40 +428,42 @@
       const arriveLocal = formatDateTimeWithPeriod(flight.arriveIso, to.timezone);
       const departTw = formatDateTimeWithPeriod(flight.departIso, HOME_TZ);
       const arriveTw = formatDateTimeWithPeriod(flight.arriveIso, HOME_TZ);
-      const detailBits = [flight.aircraft, flight.duration, flight.cabin].filter(Boolean).join(" · ");
+      const aircraft = flight.aircraft && !flight.aircraft.includes("待") ? flight.aircraft : "";
+      const detailBits = [flight.duration, aircraft].filter(Boolean).join(" · ");
+      const terminalTags = [flight.fromDetail, flight.toDetail].filter((detail) => detail && !detail.includes("待確認") && !detail.includes("Gate"));
+      const tagRow = terminalTags.length
+        ? `<div class="tag-row">${terminalTags.map((detail) => `<span class="tag">${escapeHtml(detail)}</span>`).join("")}</div>`
+        : "";
+      const note = flight.note ? `<p class="card-muted">${escapeHtml(flight.note)}</p>` : "";
 
       return `
         <article class="flight-card">
           <div class="flight-topline">
             <div>
               <span class="flight-number">${escapeHtml(flight.id)}</span>
-              <span class="flight-airline">${escapeHtml(flight.airlineZh)} · ${escapeHtml(flight.airline)}</span>
+              <span class="flight-airline">${escapeHtml(flight.airlineZh)}</span>
             </div>
             <span class="flight-badge ${escapeHtml(flight.carrierClass)}">${escapeHtml(flight.cabin)}</span>
           </div>
           <div class="flight-path">
             <div class="time-block">
-              <strong>${escapeHtml(departLocal.displayTime)}</strong>
-              <span class="code">${escapeHtml(flight.from)} ${escapeHtml(from.cityZh)}</span>
-              <span class="airport-name">${escapeHtml(from.airportZh)}</span>
-              <span class="airport-name">${escapeHtml(from.airportEn)}</span>
-              <span class="airport-name">${escapeHtml(departLocal.full)} ${escapeHtml(zoneAbbr(flight.departIso, from.timezone))}</span>
+              <strong>${escapeHtml(departLocal.compactTime)}</strong>
+              <span class="code">${escapeHtml(from.cityZh)} ${escapeHtml(flight.from)}</span>
+              <span class="airport-name">${escapeHtml(departLocal.date)} ${escapeHtml(zoneAbbr(flight.departIso, from.timezone))}</span>
             </div>
             <div class="flight-arrow" aria-hidden="true">→</div>
             <div class="time-block">
-              <strong>${escapeHtml(arriveLocal.displayTime)}</strong>
-              <span class="code">${escapeHtml(flight.to)} ${escapeHtml(to.cityZh)}</span>
-              <span class="airport-name">${escapeHtml(to.airportZh)}</span>
-              <span class="airport-name">${escapeHtml(to.airportEn)}</span>
-              <span class="airport-name">${escapeHtml(arriveLocal.full)} ${escapeHtml(zoneAbbr(flight.arriveIso, to.timezone))}</span>
+              <strong>${escapeHtml(arriveLocal.compactTime)}</strong>
+              <span class="code">${escapeHtml(to.cityZh)} ${escapeHtml(flight.to)}</span>
+              <span class="airport-name">${escapeHtml(arriveLocal.date)} ${escapeHtml(zoneAbbr(flight.arriveIso, to.timezone))}</span>
             </div>
           </div>
           <div class="taiwan-time">
-            台灣時間：${escapeHtml(departTw.full)} 出發 · ${escapeHtml(arriveTw.full)} 抵達
+            台灣：${escapeHtml(departTw.compactFull)} → ${escapeHtml(arriveTw.compactFull)}
           </div>
           <div class="flight-meta">${escapeHtml(detailBits)}</div>
-          <div class="tag-row"><span class="tag">${escapeHtml(flight.fromDetail)}</span><span class="tag">${escapeHtml(flight.toDetail)}</span></div>
-          <p class="card-muted">${escapeHtml(flight.note)}</p>
+          ${tagRow}
+          ${note}
           <div class="flight-actions">
             <a class="ghost-button" href="${mapSearchUrl(from.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">⌖</span>${escapeHtml(from.cityZh)}地圖</a>
             <a class="ghost-button" href="${mapDirectionsUrl(to.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">↗</span>導航到${escapeHtml(to.cityZh)}</a>
@@ -598,22 +608,22 @@
   }
 
   function renderAirports() {
-    $("#airportGrid").innerHTML = Object.values(airports).map((airport) => `
-      <article class="airport-card">
-        <h3>${escapeHtml(airport.code)} · ${escapeHtml(airport.cityZh)} / ${escapeHtml(airport.cityEn)}</h3>
-        <p class="card-muted">${escapeHtml(airport.airportZh)}<br>${escapeHtml(airport.airportEn)}</p>
-        <dl>
-          <dt>時區</dt><dd>${escapeHtml(airport.timezone)}</dd>
-          <dt>座標</dt><dd>${escapeHtml(airport.lat)}, ${escapeHtml(airport.lon)}</dd>
-          <dt>航廈</dt><dd>${escapeHtml(airport.terminalHint)}</dd>
-        </dl>
-        <div class="location-actions">
-          <a class="ghost-button" href="${mapSearchUrl(airport.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">⌖</span>地圖</a>
-          <a class="ghost-button" href="${mapDirectionsUrl(airport.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">↗</span>導航</a>
-          <a class="ghost-button" href="${airport.weatherUrl}" target="_blank" rel="noreferrer"><span aria-hidden="true">◷</span>天氣</a>
-        </div>
-      </article>
-    `).join("");
+    $("#airportGrid").innerHTML = Object.values(airports).map((airport) => {
+      const terminal = airport.terminalHint && !airport.terminalHint.includes("待") ? `
+        <dl><dt>航廈</dt><dd>${escapeHtml(airport.terminalHint)}</dd></dl>
+      ` : "";
+      return `
+        <article class="airport-card">
+          <h3>${escapeHtml(airport.cityZh)} ${escapeHtml(airport.code)}</h3>
+          ${terminal}
+          <div class="location-actions">
+            <a class="ghost-button" href="${mapSearchUrl(airport.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">⌖</span>地圖</a>
+            <a class="ghost-button" href="${mapDirectionsUrl(airport.mapQuery)}" target="_blank" rel="noreferrer"><span aria-hidden="true">↗</span>導航</a>
+            <a class="ghost-button" href="${airport.weatherUrl}" target="_blank" rel="noreferrer"><span aria-hidden="true">◷</span>天氣</a>
+          </div>
+        </article>
+      `;
+    }).join("");
   }
 
   function renderClimate() {
@@ -731,7 +741,7 @@
           </div>
           <div>
             <h3>${escapeHtml(item.title)}</h3>
-            <div class="card-muted">${escapeHtml(airport.cityZh)} / ${escapeHtml(airport.cityEn)}</div>
+            <div class="card-muted">${escapeHtml(airport.cityZh)} ${escapeHtml(item.city)}</div>
             <p class="card-muted">${escapeHtml(item.notes || "待補細節")}</p>
             <div class="tag-row">
               <span class="tag ${typeClass(item.type)}">${escapeHtml(item.type)}</span>

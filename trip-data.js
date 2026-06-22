@@ -3,7 +3,7 @@ window.TRIP_DATA = {
     title: "2026 美國行程控制台",
     dateRange: "2026-06-21 至 2026-07-06",
     homeTimeZone: "Asia/Taipei",
-    note: "航班時間依使用者提供的機票資訊整理；公開版不包含確認碼、票號或原始截圖。"
+    note: "手機快速查閱版。"
   },
   airports: {
     TPE: {
@@ -125,7 +125,7 @@ window.TRIP_DATA = {
       duration: "3 小時 47 分鐘",
       fromDetail: "夏洛特 CLT Gate 待確認",
       toDetail: "丹佛 DEN Gate 待確認",
-      note: "確認碼與座位不放在公開版；報到前請以航空公司 App 或私人資料確認。"
+      note: ""
     },
     {
       id: "AA4958",
@@ -652,7 +652,7 @@ window.TRIP_DATA = {
       time: "08:40",
       city: "CLT",
       mapUrl: "https://www.google.com/maps/search/?api=1&query=Charlotte+Douglas+International+Airport",
-      notes: "UA1963；確認碼與座位請保留在私人資料，不放公開版。",
+      notes: "UA1963；夏洛特飛丹佛。",
       locked: true
     },
     {
